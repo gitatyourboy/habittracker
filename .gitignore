@@ -1,0 +1,7 @@
+# Backup / scratch files — not shipped
+index.html.bak
+*.bak
+
+# OS cruft
+Thumbs.db
+.DS_Store
