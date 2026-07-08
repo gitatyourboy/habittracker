@@ -5619,8 +5619,16 @@ async function _loadFromSupabase(profileId) {
       .eq('profile_id', profileId);
     if (error) { console.warn('Supabase load:', error.message); return null; }
     if (!data?.length) return null;
-    const d = DB.defaults();
-    data.forEach(({ data_key, value }) => { if (data_key in d) d[data_key] = value; });
+    // Base on local state so notes/folders (owned by the per-note sync path) and any
+    // not-yet-synced local-only keys survive login; overlay cloud values for blob keys only.
+    // Previously this started from DB.defaults(), so notes/folders came back empty and the
+    // write-back below wiped unsynced local-only notes/bullets before the per-note pull ran.
+    let local; try { local = JSON.parse(localStorage.getItem(DB.KEY + '_' + profileId)); } catch {}
+    const d = Object.assign(DB.defaults(), (local && typeof local === 'object') ? local : {});
+    data.forEach(({ data_key, value }) => {
+      if (_NOTE_KEYS.includes(data_key)) return;   // never let a legacy blob row clobber per-note state
+      if (data_key in d) d[data_key] = value;
+    });
     return d;
   } catch(e) { console.warn('Supabase load failed:', e.message); return null; }
 }
@@ -5710,9 +5718,9 @@ async function _loadNotesFromSupabase(profileId) {
 
     localStorage.setItem(DB.KEY + '_' + profileId, JSON.stringify(_state));
     _setNotesSync('synced');
-    // First run against a cloud that only has the legacy blob (or nothing yet):
-    // seed individual rows from what we merged so other devices can see them.
-    if (!hadCloudRows && ((_state.notes||[]).length || (_state.folders||[]).length)) _syncNotesToSupabase();
+    // Push the reconciled state back so any local-only notes/bullets that never reached
+    // the cloud (failed/offline saves) are rescued — not only on first-run seeding.
+    if ((_state.notes||[]).length || (_state.folders||[]).length) _syncNotesToSupabase();
     if (document.getElementById('page-notes')?.classList.contains('active')) renderNotes();
   } catch(e) {
     console.warn('Notes load failed:', e.message || e);
