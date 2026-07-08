@@ -1412,6 +1412,7 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
       <div class="fg" style="flex:1;min-width:160px">
         <label>Viewing</label>
         <div id="td-date-label" style="font-size:14px;font-weight:700;color:var(--t1);padding:9px 0"></div>
+        <div id="todo-sync-status" class="notes-sync" data-state="idle"></div>
       </div>
     </div>
     <div class="fc" style="margin-bottom:8px;gap:8px">
@@ -1711,6 +1712,7 @@ const DB = {
       gym:                { workouts:[], prs:{} },
       todos:              [],
       todosByDate:        {},
+      todosDeleted:       {},
       todoHistory:        [],
       notes:              [],
       folders:            [],
@@ -4649,9 +4651,24 @@ function todoProgColor(pct) {
 /* Backfills d.todoHistory and d.todosByDate for profiles saved before per-date
    planning existed. Any old flat d.todos list (pre-dates this feature) is
    folded into today's bucket so nothing gets lost. */
+function _todoLegacyId(dateKey, t, idx) {
+  // Deterministic, content-derived id so the SAME legacy task migrated independently on
+  // two devices collapses to one row instead of duplicating.
+  const base = dateKey + '|' + (t.text||'') + '|' + (t.createdAt||'') + '|' + (t.startTime||'') + '|' + idx;
+  let h = 0; for (let i = 0; i < base.length; i++) h = (Math.imul(h, 31) + base.charCodeAt(i)) | 0;
+  return 'lg_' + (h >>> 0).toString(36);
+}
+function _todoNormalize(dateKey, t, idx) {
+  if (!t) return t;
+  if (!t.id) t.id = _todoLegacyId(dateKey, t, idx);
+  // Fixed (not "now") updatedAt for legacy items so migration timing never wins a merge.
+  if (!t.updatedAt) t.updatedAt = t.createdAt ? new Date(t.createdAt + 'T12:00:00').toISOString() : '2000-01-01T00:00:00.000Z';
+  return t;
+}
 function _todoHistoryMigrate(d) {
   if (!Array.isArray(d.todoHistory)) d.todoHistory = [];
   if (!d.todosByDate || typeof d.todosByDate !== 'object') d.todosByDate = {};
+  if (!d.todosDeleted || typeof d.todosDeleted !== 'object') d.todosDeleted = {};
   if (Array.isArray(d.todos) && d.todos.length) {
     const todayKey = today();
     if (!Array.isArray(d.todosByDate[todayKey])) d.todosByDate[todayKey] = [];
@@ -4659,6 +4676,10 @@ function _todoHistoryMigrate(d) {
     d.todos = [];
   }
   if (!Array.isArray(d.todos)) d.todos = [];
+  // Ensure every todo carries a stable id + updatedAt for per-item cross-device merge.
+  Object.entries(d.todosByDate).forEach(([dateKey, bucket]) => {
+    if (Array.isArray(bucket)) bucket.forEach((t, idx) => _todoNormalize(dateKey, t, idx));
+  });
 }
 
 function _selectedTodoDate(d) { return d.selectedTodoDate || today(); }
@@ -4788,7 +4809,7 @@ function addTodo() {
   const dateKey = _selectedTodoDate(d0);
   DB.update(d => {
     // Progress always starts at 0% — adjusted afterward via the slider on the task card.
-    _ensureTodoDateBucket(d, dateKey).push({text, startTime, endTime, priority, progress:0, done:false, createdAt:today()});
+    _ensureTodoDateBucket(d, dateKey).push({id:_uid(), text, startTime, endTime, priority, progress:0, done:false, createdAt:today(), updatedAt:_nowIso()});
   });
   document.getElementById('td-txt').value   = '';
   document.getElementById('td-start').value = '';
@@ -4802,7 +4823,7 @@ function toggleTodo(i) {
   const dateKey = _selectedTodoDate(d0);
   DB.update(d => {
     const bucket = _ensureTodoDateBucket(d, dateKey);
-    if (bucket[i]) bucket[i].done = !bucket[i].done;
+    if (bucket[i]) { bucket[i].done = !bucket[i].done; bucket[i].updatedAt = _nowIso(); }
   });
   renderTodo();
 }
@@ -4811,7 +4832,15 @@ function deleteTodo(i) {
   showConfirm('Are you sure?', () => {
     const d0 = DB.get();
     const dateKey = _selectedTodoDate(d0);
-    DB.update(d => { _ensureTodoDateBucket(d, dateKey).splice(i,1); });
+    DB.update(d => {
+      const bucket = _ensureTodoDateBucket(d, dateKey);
+      const [removed] = bucket.splice(i,1);
+      if (removed && removed.id) {
+        if (!d.todosDeleted || typeof d.todosDeleted !== 'object') d.todosDeleted = {};
+        if (!Array.isArray(d.todosDeleted[dateKey])) d.todosDeleted[dateKey] = [];
+        d.todosDeleted[dateKey].push({ id: removed.id, updatedAt: _nowIso() });
+      }
+    });
     renderTodo();
   });
 }
@@ -4822,7 +4851,7 @@ function updateTodoProgress(orig, val) {
   const dateKey = _selectedTodoDate(d0);
   DB.update(d => {
     const bucket = _ensureTodoDateBucket(d, dateKey);
-    if (bucket[orig]) bucket[orig].progress = pct;
+    if (bucket[orig]) { bucket[orig].progress = pct; bucket[orig].updatedAt = _nowIso(); }
   });
   renderTodo();
 }
@@ -4853,7 +4882,12 @@ function logDay() {
       // Re-logging the same date replaces the earlier entry instead of duplicating it.
       d.todoHistory = d.todoHistory.filter(h => h.date !== entry.date);
       d.todoHistory.push(entry);
-      _ensureTodoDateBucket(d, dateKey).length = 0; // clear only this date's list
+      // Tombstone each cleared task so other devices don't resurrect them on merge.
+      const _cleared = _ensureTodoDateBucket(d, dateKey);
+      if (!d.todosDeleted || typeof d.todosDeleted !== 'object') d.todosDeleted = {};
+      if (!Array.isArray(d.todosDeleted[dateKey])) d.todosDeleted[dateKey] = [];
+      _cleared.forEach(t => { if (t && t.id) d.todosDeleted[dateKey].push({ id: t.id, updatedAt: _nowIso() }); });
+      _cleared.length = 0; // clear only this date's list
     });
     toast(`${_todoDateLabel(dateKey)} logged — ${completionPct}% complete! 🎉`, 'ok');
     renderTodo();
@@ -5585,17 +5619,20 @@ document.querySelectorAll('.confirm-overlay').forEach(o=>{
 /* Keys owned by the per-note sync path — the blanket blob sync must NEVER
    blind-overwrite these (that was the root cause of notes vanishing). */
 const _NOTE_KEYS = ['notes','folders','notesDeleted','foldersDeleted'];
+/* Keys owned by the per-date todo sync path — also kept out of the blob sync so a
+   stale whole-object write can never wipe another device's day. */
+const _TODO_KEYS = ['todosByDate','todosDeleted'];
 
 function _scheduleSync(d) {
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(() => { _syncToSupabase(d); _syncNotesToSupabase(); }, 700);
+  _syncTimer = setTimeout(() => { _syncToSupabase(d); _syncNotesToSupabase(); _syncTodosToSupabase(); }, 700);
 }
 
 async function _syncToSupabase(d) {
   if (!_sb || !_profile) return;
   try {
     const rows = Object.entries(d)
-      .filter(([k]) => !_NOTE_KEYS.includes(k))
+      .filter(([k]) => !_NOTE_KEYS.includes(k) && !_TODO_KEYS.includes(k))
       .map(([k, v]) => ({
         profile_id: _profile,
         data_key:   k,
@@ -5626,7 +5663,7 @@ async function _loadFromSupabase(profileId) {
     let local; try { local = JSON.parse(localStorage.getItem(DB.KEY + '_' + profileId)); } catch {}
     const d = Object.assign(DB.defaults(), (local && typeof local === 'object') ? local : {});
     data.forEach(({ data_key, value }) => {
-      if (_NOTE_KEYS.includes(data_key)) return;   // never let a legacy blob row clobber per-note state
+      if (_NOTE_KEYS.includes(data_key) || _TODO_KEYS.includes(data_key)) return;   // per-note / per-todo paths own these keys
       if (data_key in d) d[data_key] = value;
     });
     return d;
@@ -5733,6 +5770,104 @@ function _refreshNotesSoon() {
   if (!_sb || !_profile) return;
   clearTimeout(_notesRefreshTimer);
   _notesRefreshTimer = setTimeout(() => _loadNotesFromSupabase(_profile), 250);
+}
+
+/* ═══════════════════════════════════════
+   TODOS SYNC  (Supabase = source of truth, per-date rows)
+   Each date is its own row (data_key 'todo:<date>'); items merge per-id by newest
+   updatedAt with tombstones, so one device's day can never wipe another's, and two
+   devices editing the same day both keep their tasks.
+═══════════════════════════════════════ */
+function _setTodoSync(state) {
+  const el = document.getElementById('todo-sync-status');
+  if (!el) return;
+  el.dataset.state = state;
+  el.textContent = { synced:'Synced', saving:'Saving…', offline:'Sync failed — will retry', loading:'Syncing…' }[state] || '';
+}
+
+async function _syncTodosToSupabase() {
+  if (!_sb || !_profile || !_state) return;
+  const profile = _profile;
+  _setTodoSync('saving');
+  try {
+    const byDate    = _state.todosByDate  || {};
+    const delByDate = _state.todosDeleted || {};
+    const dates = new Set([...Object.keys(byDate), ...Object.keys(delByDate)]);
+    const rows = [];
+    dates.forEach(date => {
+      const items   = Array.isArray(byDate[date])    ? byDate[date]    : [];
+      const deleted = Array.isArray(delByDate[date]) ? delByDate[date] : [];
+      if (!items.length && !deleted.length) return;
+      rows.push({ profile_id: profile, data_key: 'todo:' + date, value: { date, items, deleted }, updated_at: _nowIso() });
+    });
+    if (!rows.length) { _setTodoSync('synced'); return; }
+    const { error } = await _sb.from('user_data').upsert(rows, { onConflict: 'profile_id,data_key' });
+    if (error) throw error;
+    _setTodoSync('synced');
+  } catch(e) {
+    console.warn('Todos sync failed:', e.message || e);
+    _setTodoSync('offline');
+  }
+}
+
+async function _loadTodosFromSupabase(profileId) {
+  if (!_sb || !_state || _profile !== profileId) return;
+  _setTodoSync('loading');
+  try {
+    // per-date rows are authoritative; the legacy whole-object blob seeds first-run / fresh devices
+    const [{ data: rows, error: rerr }, { data: legacy, error: lerr }] = await Promise.all([
+      _sb.from('user_data').select('value').eq('profile_id', profileId).like('data_key', 'todo:%'),
+      _sb.from('user_data').select('value').eq('profile_id', profileId).eq('data_key', 'todosByDate')
+    ]);
+    if (rerr || lerr) throw (rerr || lerr);
+    if (_profile !== profileId) return;             // profile switched mid-flight
+
+    _todoHistoryMigrate(_state);                    // ensure local todos carry id + updatedAt
+
+    // Build cloud buckets: legacy blob first (low precedence seed), then authoritative per-date rows.
+    const cloudBuckets = {}, cloudTombs = {};
+    const legacyObj = (legacy && legacy[0] && legacy[0].value) || null;
+    if (legacyObj && typeof legacyObj === 'object') {
+      Object.entries(legacyObj).forEach(([date, bucket]) => {
+        cloudBuckets[date] = (Array.isArray(bucket) ? bucket : []).map((t, idx) => _todoNormalize(date, { ...t }, idx));
+      });
+    }
+    (rows || []).forEach(({ value }) => {
+      if (!value || !value.date) return;
+      cloudBuckets[value.date] = Array.isArray(value.items)   ? value.items   : [];
+      cloudTombs[value.date]   = Array.isArray(value.deleted) ? value.deleted : [];
+    });
+
+    _state.todosByDate  = _state.todosByDate  || {};
+    _state.todosDeleted = _state.todosDeleted || {};
+    const allDates = new Set([
+      ...Object.keys(_state.todosByDate), ...Object.keys(_state.todosDeleted),
+      ...Object.keys(cloudBuckets), ...Object.keys(cloudTombs)
+    ]);
+    allDates.forEach(date => {
+      const localItems = Array.isArray(_state.todosByDate[date])  ? _state.todosByDate[date]  : [];
+      const localTomb  = Array.isArray(_state.todosDeleted[date]) ? _state.todosDeleted[date] : [];
+      const cItems = cloudBuckets[date] || [];
+      const cTomb  = cloudTombs[date]   || [];
+      _state.todosByDate[date]  = _mergeById(localItems, cItems, [...localTomb, ...cTomb]);
+      _state.todosDeleted[date] = _mergeTombstones(localTomb, cTomb);
+    });
+
+    localStorage.setItem(DB.KEY + '_' + profileId, JSON.stringify(_state));
+    _setTodoSync('synced');
+    _syncTodosToSupabase();                          // back-fill local-only todos into per-date rows
+    if (document.getElementById('page-todo')?.classList.contains('active')) renderTodo();
+  } catch(e) {
+    console.warn('Todos load failed:', e.message || e);
+    _setTodoSync('offline');
+  }
+}
+
+let _todosRefreshTimer = null;
+function _refreshTodosSoon() {
+  if (!_sb || !_profile) return;
+  clearTimeout(_todosRefreshTimer);
+  _todosRefreshTimer = setTimeout(() => _loadTodosFromSupabase(_profile), 250);
 }
 
 /* ═══════════════════════════════════════
@@ -5971,6 +6106,7 @@ async function _startSession(id) {
   // Notes: Supabase is the source of truth — pull the latest right after login,
   // then keep in sync on focus / tab-visible and (if enabled) via realtime.
   _loadNotesFromSupabase(id);
+  _loadTodosFromSupabase(id);
   _subscribeNotesRealtime(id);
 }
 
@@ -5985,12 +6121,12 @@ function _subscribeNotesRealtime(id) {
       .channel('notes-' + id)
       .on('postgres_changes',
           { event: '*', schema: 'public', table: 'user_data', filter: 'profile_id=eq.' + id },
-          () => _refreshNotesSoon())
+          () => { _refreshNotesSoon(); _refreshTodosSoon(); })
       .subscribe();
   } catch(e) { console.warn('Realtime unavailable:', e.message || e); }
 }
-window.addEventListener('focus', _refreshNotesSoon);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) _refreshNotesSoon(); });
+window.addEventListener('focus', () => { _refreshNotesSoon(); _refreshTodosSoon(); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { _refreshNotesSoon(); _refreshTodosSoon(); } });
 
 // Keyboard support
 document.addEventListener('keydown', e => {
