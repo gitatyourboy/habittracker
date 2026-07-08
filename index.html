@@ -1870,7 +1870,8 @@ function _animateNumber(el, target, opts) {
   }
   requestAnimationFrame(tick);
 }
-const today = () => new Date().toISOString().slice(0,10);
+const _dateKey = (dt) => dt.toLocaleDateString('en-CA');   // local YYYY-MM-DD — avoids UTC off-by-one near local midnight
+const today = () => _dateKey(new Date());
 const _nowIso = () => new Date().toISOString();
 const fmtDate = d => {
   if (!d) return '';
@@ -2884,7 +2885,7 @@ function _weightLogsForRange(logsAsc, range) {
   if (range === 'all' || !logsAsc.length) return logsAsc;
   const days = range === 'week' ? 7 : 30;
   const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
-  const cutoffStr = cutoff.toISOString().slice(0,10);
+  const cutoffStr = _dateKey(cutoff);
   return logsAsc.filter(w => w.date >= cutoffStr);
 }
 
@@ -4678,7 +4679,7 @@ function setTodoDate(dateStr) {
 function setTodoDateToday() { setTodoDate(today()); }
 function setTodoDateTomorrow() {
   const t = new Date(); t.setDate(t.getDate()+1);
-  setTodoDate(t.toISOString().slice(0,10));
+  setTodoDate(_dateKey(t));
 }
 
 let _showNext7 = false;
@@ -4695,7 +4696,7 @@ function renderTodoDateChips() {
   const chips = [];
   for (let i = 0; i < 7; i++) {
     const dt = new Date(); dt.setDate(dt.getDate()+i);
-    const key = dt.toISOString().slice(0,10);
+    const key = _dateKey(dt);
     const label = dt.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
     chips.push(`<button type="button" class="fin-month-chip${key===selected?' active':''}" onclick="setTodoDate('${key}')">${label}</button>`);
   }
@@ -4706,9 +4707,9 @@ function renderTodoDateChips() {
 function _todoDateLabel(dateKey) {
   const todayKey = today();
   const tmrw = new Date(); tmrw.setDate(tmrw.getDate()+1);
-  const tmrwKey = tmrw.toISOString().slice(0,10);
+  const tmrwKey = _dateKey(tmrw);
   const yest = new Date(); yest.setDate(yest.getDate()-1);
-  const yestKey = yest.toISOString().slice(0,10);
+  const yestKey = _dateKey(yest);
   let tag = '';
   if (dateKey === todayKey) tag = ' (Today)';
   else if (dateKey === tmrwKey) tag = ' (Tomorrow)';
@@ -4940,7 +4941,7 @@ function renderTodoAnalysis() {
   }
 
   const sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate()-6);
-  const sevenStr = sevenAgo.toISOString().slice(0,10);
+  const sevenStr = _dateKey(sevenAgo);
   const weekDays = history.filter(h => h.date >= sevenStr);
   const monthPrefix = today().slice(0,7);
   const monthDays = history.filter(h => h.date.slice(0,7) === monthPrefix);
@@ -5134,7 +5135,7 @@ function _calDaysInRange(d, period) {
   if (period === 'all') return keys;
   if (period === 'week') {
     const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-6);
-    const cutoffStr = cutoff.toISOString().slice(0,10);
+    const cutoffStr = _dateKey(cutoff);
     return keys.filter(k => k >= cutoffStr);
   }
   const monthPrefix = today().slice(0,7);
