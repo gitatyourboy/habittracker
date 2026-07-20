@@ -97,6 +97,13 @@ const tests = `
   const longEventPosition = _plannerEventPosition({ startTime:'05:00', endTime:'11:11' });
   assert.equal(longEventPosition.top, 283);
   assert.ok(longEventPosition.height > 300, 'long events should span multiple time rows');
+  const shortLayouts = _plannerEventLayouts([
+    { event:{ id:'short-1', startTime:'06:30', endTime:'06:50' }, kind:'private' },
+    { event:{ id:'short-2', startTime:'07:00', endTime:'07:15' }, kind:'private' },
+  ]);
+  assert.equal(shortLayouts[0].laneCount, 2, 'short cards whose visual boxes collide should use separate lanes');
+  assert.equal(shortLayouts[1].laneCount, 2);
+  assert.notEqual(shortLayouts[0].lane, shortLayouts[1].lane);
 
   const scheduleData = DB.defaults();
   scheduleData.selectedTodoDate = dateKey;

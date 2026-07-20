@@ -724,6 +724,10 @@ nav::-webkit-scrollbar{height:0}
 .planner-outcome.selected.on_time{color:#34d399;border-color:rgba(52,211,153,.36);background:rgba(52,211,153,.12)}
 .planner-outcome.selected.done{color:#fbbf24;border-color:rgba(251,191,36,.36);background:rgba(251,191,36,.12)}
 .planner-outcome.selected.missed{color:#f87171;border-color:rgba(248,113,113,.36);background:rgba(248,113,113,.12)}
+.planner-event.narrow{gap:4px;padding-left:5px;padding-right:5px}
+.planner-event.narrow .planner-event-time,.planner-event.narrow>.lock-btn{display:none}
+.planner-event.narrow .planner-outcome{padding-left:3px;padding-right:3px}
+.planner-event.narrow .planner-outcome>span:last-child{display:none}
 .planner-event .db{flex-shrink:0}
 .planner-empty{padding:22px 14px;text-align:center;color:var(--t3);font-size:12px;line-height:1.55}
 .planner-drag-ghost{position:fixed;z-index:5000;pointer-events:none;opacity:.92;transform:translate(-18px,-18px);box-shadow:0 18px 45px rgba(0,0,0,.5);background:var(--surface)}
@@ -5660,6 +5664,36 @@ function _plannerEventPosition(event) {
   return { top, height:Math.min(remainingHeight, Math.max(46, naturalHeight)) };
 }
 
+function _plannerEventLayouts(entries) {
+  const positioned = entries.map((entry, order) => ({ ...entry, order, position:_plannerEventPosition(entry.event) }))
+    .filter(entry => entry.position)
+    .sort((a,b) => a.position.top - b.position.top || a.order - b.order);
+  let group = [];
+  let groupEnd = -1;
+  let laneEnds = [];
+  const finishGroup = () => {
+    const laneCount = Math.max(1, laneEnds.length);
+    group.forEach(entry => { entry.laneCount = laneCount; });
+    group = [];
+    groupEnd = -1;
+    laneEnds = [];
+  };
+
+  positioned.forEach(entry => {
+    const top = entry.position.top;
+    const bottom = top + entry.position.height;
+    if (group.length && top >= groupEnd) finishGroup();
+    let lane = laneEnds.findIndex(end => end <= top);
+    if (lane < 0) lane = laneEnds.length;
+    laneEnds[lane] = bottom;
+    entry.lane = lane;
+    group.push(entry);
+    groupEnd = Math.max(groupEnd, bottom);
+  });
+  if (group.length) finishGroup();
+  return positioned.sort((a,b) => a.order - b.order);
+}
+
 function _plannerValidTimeRange(startTime, endTime) {
   const start = _plannerTimeMinutes(startTime);
   const end = _plannerTimeMinutes(endTime);
@@ -6000,13 +6034,19 @@ function setPlannerOutcome(kind, id, status) {
   renderPlanner();
 }
 
-function _plannerEventHtml(event, kind) {
+function _plannerEventHtml(event, kind, layout = null) {
   const isTodo = kind === 'todo';
   const done = isTodo && _todoEffectiveProgress(event) >= 100;
   const time = [event.startTime, event.endTime].filter(Boolean).join('–');
-  const position = _plannerEventPosition(event);
+  const position = layout?.position || _plannerEventPosition(event);
   if (!position) return '';
-  return `<div class="planner-event planner-event-positioned${isTodo?'':' private'}${done?' done':''}" style="top:${position.top}px;height:${position.height}px" onclick="event.stopPropagation()">
+  const laneCount = layout?.laneCount || 1;
+  const lane = layout?.lane || 0;
+  const laneWidth = 100 / laneCount;
+  const lanePosition = laneCount > 1
+    ? `left:calc(${lane * laneWidth}% + 5px);width:calc(${laneWidth}% - 10px);right:auto;`
+    : 'left:9px;right:9px;';
+  return `<div class="planner-event planner-event-positioned${isTodo?'':' private'}${done?' done':''}${laneCount>1?' narrow':''}" style="top:${position.top}px;height:${position.height}px;${lanePosition}" onclick="event.stopPropagation()">
     <span class="planner-event-time">${escHtml(time)}</span>
     <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span>${_plannerOutcomeButtons(kind,event.id,event.timingStatus)}</span>
     <button class="lock-btn${event.locked?' on':''}" title="${event.locked?'Unlock daily item':'Keep this item every day'}" onclick="event.stopPropagation();togglePlannerItemLock('${kind}','${event.id}')">${_lockIcon(!!event.locked)}</button>
@@ -6060,10 +6100,10 @@ function renderPlanner() {
     const startTime = String(hour).padStart(2,'0') + ':00';
     slots.push(`<div class="planner-slot"><div class="planner-time">${startTime}</div><div class="planner-dropzone" data-planner-time="${startTime}" onclick="plannerSlotClick('${startTime}')" ondragover="plannerDragOver(event)" ondragleave="plannerDragLeave(event)" ondrop="plannerDrop(event,'${startTime}')"></div></div>`);
   }
-  const eventCards = [
-    ...todos.filter(task => task.startTime).map(task => _plannerEventHtml(task,'todo')),
-    ...plannerEvents.filter(item => item.startTime).map(item => _plannerEventHtml(item,'private')),
-  ].join('');
+  const eventCards = _plannerEventLayouts([
+    ...todos.filter(task => task.startTime).map(event => ({ event, kind:'todo' })),
+    ...plannerEvents.filter(event => event.startTime).map(event => ({ event, kind:'private' })),
+  ]).map(layout => _plannerEventHtml(layout.event,layout.kind,layout)).join('');
   timeline.innerHTML = `<div class="planner-timeline-grid">${slots.join('')}<div class="planner-events-layer">${eventCards}</div></div>`;
   if (timeline.dataset.ready) timeline.scrollTop = oldScroll;
   else {
