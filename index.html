@@ -601,6 +601,25 @@ nav::-webkit-scrollbar{height:0}
 .th-task:last-child{border-bottom:none}
 .th-task.skip{color:var(--t2)}
 
+/* ── Consistency checker ── */
+.consistency-list{display:flex;flex-direction:column;gap:9px}
+.consistency-day{display:grid;grid-template-columns:minmax(110px,1.1fr) minmax(180px,3fr) 90px 92px;align-items:center;gap:14px;padding:13px 15px;background:var(--fill);border:1px solid var(--border);border-radius:13px;transition:var(--tr)}
+.consistency-day:hover{border-color:rgba(var(--accent-rgb),.32);background:rgba(var(--accent-rgb),.055)}
+.consistency-date{font-size:13px;font-weight:700;color:var(--t1)}
+.consistency-date span{display:block;font-size:10.5px;font-weight:500;color:var(--t3);margin-top:2px}
+.consistency-progress{display:flex;align-items:center;gap:10px;min-width:0}
+.consistency-track{height:8px;flex:1;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.consistency-fill{height:100%;border-radius:99px;transition:width .45s ease}
+.consistency-count{font-size:11.5px;color:var(--t2);white-space:nowrap;text-align:right}
+.consistency-pct{font-size:17px;font-weight:800;text-align:right;font-feature-settings:"tnum" 1}
+.consistency-empty-day{color:var(--t3)}
+@media(max-width:650px){
+  .consistency-day{grid-template-columns:1fr auto;gap:8px 12px}
+  .consistency-progress{grid-column:1/-1;order:3}
+  .consistency-count{grid-column:1;grid-row:2;text-align:left}
+  .consistency-pct{grid-column:2;grid-row:1/3}
+}
+
 /* ── Calorie Tracker page ── */
 .cal-macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:700px){.cal-macro-grid{grid-template-columns:repeat(2,1fr)}}
@@ -1129,6 +1148,9 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
   <button class="nbtn" data-page="todo" onclick="showPage('todo')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>To-Do List
   </button>
+  <button class="nbtn" data-page="consistency" onclick="showPage('consistency')">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>Consistency
+  </button>
   <button class="nbtn" data-page="notes" onclick="showPage('notes')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Notes
   </button>
@@ -1645,6 +1667,40 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
       <div class="analytics-mets" id="todo-analysis-metrics" style="margin-bottom:14px"></div>
       <div id="todo-analysis-lists"></div>
       <div class="insight-panel" id="todo-analysis-ai" style="margin-top:14px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONSISTENCY PAGE ═══ -->
+<div id="page-consistency" class="page">
+  <div class="sp">
+    <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>Momentum</span><h1>Consistency Checker</h1><p>See the percentage of your to-do list completed each day</p></div>
+
+    <div class="analytics-mets" id="consistency-metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px"></div>
+
+    <div class="cc" style="margin-bottom:16px">
+      <div class="analytics-hdr">
+        <div>
+          <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Daily Completion Trend</h3>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Completed tasks as a percentage of everything planned</p>
+        </div>
+        <div class="seg-ctrl" id="consistency-range-ctrl">
+          <button type="button" class="seg-btn" id="consistency-range-7" onclick="setConsistencyRange('7')">7 Days</button>
+          <button type="button" class="seg-btn active" id="consistency-range-30" onclick="setConsistencyRange('30')">30 Days</button>
+          <button type="button" class="seg-btn" id="consistency-range-all" onclick="setConsistencyRange('all')">All Time</button>
+        </div>
+      </div>
+      <div class="cb" style="height:280px"><canvas id="consistency-chart"></canvas></div>
+    </div>
+
+    <div class="cc">
+      <div class="analytics-hdr">
+        <div>
+          <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Day-by-Day Results</h3>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Live lists and logged days are combined automatically</p>
+        </div>
+      </div>
+      <div class="consistency-list" id="consistency-daily-list"></div>
     </div>
   </div>
 </div>
@@ -2343,6 +2399,7 @@ function showPage(name) {
   const renderers = {
     goals: renderGoals,
     todo: renderTodo,
+    consistency: renderConsistency,
     notes: renderNotes,
     /* Retired feature renderers retained for easy restoration:
     sleep: renderSleep,
@@ -5401,8 +5458,181 @@ function _generateTodoAISummary({ weeklyRate, avgProgressWeek, nameList, mostSki
 }
 
 /* ═══════════════════════════════════════
-   CALORIE TRACKER PAGE
+   CONSISTENCY CHECKER PAGE
 ═══════════════════════════════════════ */
+/* CONSISTENCY CHECKER
+   Combines logged to-do history with live per-date task lists so the daily
+   percentage is useful both before and after a day is formally logged. */
+let _consistencyRange = '30';
+
+function setConsistencyRange(range) {
+  _consistencyRange = ['7','30','all'].includes(range) ? range : '30';
+  renderConsistency();
+}
+
+function _consistencyPct(record) {
+  return record && record.total ? Math.round(record.done / record.total * 100) : null;
+}
+
+function _consistencyColor(pct) {
+  if (pct == null) return 'var(--t3)';
+  return pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+}
+
+function _consistencyRecords(d) {
+  const records = {};
+  const ensure = date => records[date] || (records[date] = { date, done:0, total:0, logged:false, live:false });
+
+  (d.todoHistory || []).forEach(h => {
+    if (!h || !h.date) return;
+    const tasks = Array.isArray(h.tasks) ? h.tasks : [];
+    const record = ensure(h.date);
+    const fallbackTotal = (+h.completedCount || 0) + (+h.skippedCount || 0);
+    record.total += tasks.length || fallbackTotal;
+    record.done += tasks.length ? tasks.filter(t => t && t.done).length : (+h.completedCount || 0);
+    record.logged = true;
+  });
+
+  Object.entries(d.todosByDate || {}).forEach(([date, tasks]) => {
+    if (!Array.isArray(tasks) || !tasks.length) return;
+    const record = ensure(date);
+    record.total += tasks.length;
+    record.done += tasks.filter(t => t && t.done).length;
+    record.live = true;
+  });
+
+  return records;
+}
+
+function _consistencyDateKeyOffset(daysBack) {
+  const date = new Date();
+  date.setHours(12,0,0,0);
+  date.setDate(date.getDate() - daysBack);
+  return _dateKey(date);
+}
+
+function _consistencyDays(records, range) {
+  if (range === 'all') return Object.values(records).filter(r => r.total > 0).sort((a,b) => a.date.localeCompare(b.date));
+  const count = range === '7' ? 7 : 30;
+  const days = [];
+  for (let offset = count - 1; offset >= 0; offset--) {
+    const date = _consistencyDateKeyOffset(offset);
+    days.push(records[date] || { date, done:0, total:0, logged:false, live:false });
+  }
+  return days;
+}
+
+function _consistencyStreak(records) {
+  let streak = 0;
+  const cursor = new Date(today() + 'T12:00:00');
+  for (let i = 0; i < 3660; i++) {
+    const key = _dateKey(cursor);
+    const record = records[key];
+    const pct = _consistencyPct(record);
+    if (!record || !record.total || pct < 80) break;
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function renderConsistency() {
+  DB.update(d => _todoHistoryMigrate(d));
+  const d = DB.get();
+  const records = _consistencyRecords(d);
+  const days = _consistencyDays(records, _consistencyRange);
+  const trackedDays = days.filter(day => day.total > 0);
+  const totalTasks = trackedDays.reduce((sum, day) => sum + day.total, 0);
+  const totalDone = trackedDays.reduce((sum, day) => sum + day.done, 0);
+  const completionRate = totalTasks ? Math.round(totalDone / totalTasks * 100) : 0;
+  const dailyAverage = trackedDays.length
+    ? Math.round(trackedDays.reduce((sum, day) => sum + _consistencyPct(day), 0) / trackedDays.length)
+    : 0;
+  const todayRecord = records[today()];
+  const todayPct = _consistencyPct(todayRecord);
+  const streak = _consistencyStreak(records);
+  const perfectDays = trackedDays.filter(day => _consistencyPct(day) === 100).length;
+  const rangeLabel = _consistencyRange === '7' ? '7-Day' : _consistencyRange === '30' ? '30-Day' : 'All-Time';
+
+  ['7','30','all'].forEach(range => {
+    const button = document.getElementById('consistency-range-' + range);
+    if (button) button.classList.toggle('active', range === _consistencyRange);
+  });
+
+  document.getElementById('consistency-metrics').innerHTML = `
+    <div class="amet"><div class="amet-v" style="color:${_consistencyColor(todayPct)}">${todayPct==null?'—':todayPct+'%'}</div><div class="amet-l">Today${todayRecord?.total?` · ${todayRecord.done}/${todayRecord.total} tasks`:''}</div></div>
+    <div class="amet"><div class="amet-v" style="color:${_consistencyColor(totalTasks?completionRate:null)}">${totalTasks?completionRate+'%':'—'}</div><div class="amet-l">${rangeLabel} Task Completion</div></div>
+    <div class="amet"><div class="amet-v" style="color:${_consistencyColor(trackedDays.length?dailyAverage:null)}">${trackedDays.length?dailyAverage+'%':'—'}</div><div class="amet-l">Average Daily Percentage</div></div>
+    <div class="amet"><div class="amet-v">${streak}</div><div class="amet-l">Current 80%+ Streak</div></div>
+    <div class="amet"><div class="amet-v">${perfectDays}</div><div class="amet-l">Perfect Days</div></div>
+    <div class="amet"><div class="amet-v">${trackedDays.length}</div><div class="amet-l">Days With Tasks</div></div>`;
+
+  const chartDays = days.length > 90 ? days.slice(-90) : days;
+  const base = chartDefaults();
+  makeChart('consistency-chart', {
+    type: 'bar',
+    data: {
+      labels: chartDays.map(day => new Date(day.date + 'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})),
+      datasets: [{
+        data: chartDays.map(day => _consistencyPct(day)),
+        backgroundColor: chartDays.map(day => {
+          const pct = _consistencyPct(day);
+          return pct == null ? 'rgba(255,255,255,.05)' : pct >= 80 ? 'rgba(52,211,153,.72)' : pct >= 50 ? 'rgba(251,191,36,.72)' : 'rgba(248,113,113,.72)';
+        }),
+        borderColor: chartDays.map(day => _consistencyColor(_consistencyPct(day))),
+        borderWidth: 1,
+        borderRadius: 6,
+        maxBarThickness: 28,
+      }]
+    },
+    options: {
+      ...base,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        ...base.plugins,
+        tooltip: { callbacks: { label: context => {
+          const day = chartDays[context.dataIndex];
+          const pct = _consistencyPct(day);
+          return pct == null ? 'No tasks planned' : `${day.done} of ${day.total} tasks completed (${pct}%)`;
+        } } }
+      },
+      scales: {
+        x: base.scales.x,
+        y: {
+          ...base.scales.y,
+          beginAtZero: true,
+          max: 100,
+          ticks: { ...base.scales.y.ticks, stepSize:25, callback:value => value + '%' }
+        }
+      }
+    }
+  });
+
+  const list = document.getElementById('consistency-daily-list');
+  const listDays = [...days].reverse();
+  if (!listDays.length) {
+    list.innerHTML = '<div class="empty">No task days yet — add tasks in your To-Do List to start tracking consistency.</div>';
+    return;
+  }
+
+  list.innerHTML = listDays.map(day => {
+    const pct = _consistencyPct(day);
+    const color = _consistencyColor(pct);
+    const weekday = new Date(day.date + 'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'});
+    const source = day.logged && day.live ? 'Logged + live' : day.logged ? 'Logged' : day.live ? 'Live' : 'No tasks planned';
+    return `<div class="consistency-day${pct==null?' consistency-empty-day':''}">
+      <div class="consistency-date">${fmtDate(day.date)}<span>${weekday} · ${source}</span></div>
+      <div class="consistency-progress">
+        <div class="consistency-track"><div class="consistency-fill" style="width:${pct||0}%;background:${color}"></div></div>
+      </div>
+      <div class="consistency-count">${day.total ? `${day.done} of ${day.total} tasks` : 'No tasks'}</div>
+      <div class="consistency-pct" style="color:${color}">${pct==null?'—':pct+'%'}</div>
+    </div>`;
+  }).join('');
+}
+
+/* CALORIE TRACKER PAGE (retired UI retained below) */
 const MEAL_TYPE_LABEL = { breakfast:'Breakfast', lunch:'Lunch', dinner:'Dinner', snack:'Snack', other:'Other' };
 
 function _calorieMigrate(d) {
@@ -5936,6 +6166,7 @@ function _renderActivePageAfterCloudUpdate() {
   const renderers = {
     goals:renderGoals,
     todo:renderTodo,
+    consistency:renderConsistency,
     notes:renderNotes,
     /* Retired feature renderers retained for easy restoration:
     sleep:renderSleep,
