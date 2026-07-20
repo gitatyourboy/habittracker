@@ -649,7 +649,7 @@ nav::-webkit-scrollbar{height:0}
 .consistency-timing-stat{padding:13px 10px;border-radius:12px;background:var(--fill);border:1px solid var(--border);text-align:center;min-width:0}
 .consistency-timing-value{font-size:21px;font-weight:800;color:var(--t1);font-feature-settings:"tnum" 1}
 .consistency-timing-label{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.35px;margin-top:4px;line-height:1.25}
-.consistency-timing-list{display:flex;flex-direction:column;gap:7px}
+.consistency-timing-list{display:flex;flex-direction:column;gap:7px;max-height:560px;overflow-y:auto;padding-right:2px}
 .consistency-timing-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--fill);border:1px solid var(--border)}
 .consistency-timing-task{min-width:0;font-size:12.5px;font-weight:650;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .consistency-timing-meta{font-size:10.5px;color:var(--t3);white-space:nowrap}
@@ -1946,19 +1946,19 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
       <div class="consistency-chevron" id="consistency-cover-chevron">▼</div>
     </button>
 
+    <div class="cc" style="margin-bottom:16px">
+      <div class="analytics-hdr">
+        <div>
+          <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Timing of Tasks</h3>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Every task placed on your timetable appears here. “Did it” means completed, but outside the planned time.</p>
+        </div>
+      </div>
+      <div class="consistency-timing-grid" id="consistency-timing-metrics"></div>
+      <div class="consistency-timing-list" id="consistency-timing-list"></div>
+    </div>
+
     <div class="consistency-fold-content" id="consistency-details">
       <div class="analytics-mets" id="consistency-metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px"></div>
-
-      <div class="cc" style="margin-bottom:16px">
-        <div class="analytics-hdr">
-          <div>
-            <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Timing of Tasks</h3>
-            <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Your on-time score uses the outcomes you tick in the Day Planner. “Did it” means completed, but outside the planned time.</p>
-          </div>
-        </div>
-        <div class="consistency-timing-grid" id="consistency-timing-metrics"></div>
-        <div class="consistency-timing-list" id="consistency-timing-list"></div>
-      </div>
 
       <div class="cc" style="margin-bottom:16px">
         <div class="analytics-hdr">
@@ -5296,6 +5296,8 @@ function _todoNormalize(dateKey, t, idx) {
   if (!t) return t;
   if (!t.id) t.id = _todoLegacyId(dateKey, t, idx);
   if (t.timingStatus && !['on_time','done','missed'].includes(t.timingStatus)) t.timingStatus = '';
+  if (t.startTime && !t.lastScheduledStartTime) t.lastScheduledStartTime = t.startTime;
+  if (t.endTime && !t.lastScheduledEndTime) t.lastScheduledEndTime = t.endTime;
   if (t.done) t.progress = 100;
   else t.progress = Math.min(100, Math.max(0, parseInt(t.progress) || 0));
   if (t.progress >= 100) t.done = true;
@@ -5535,7 +5537,7 @@ function addTodo() {
   const dateKey = _selectedTodoDate(d0);
   DB.update(d => {
     // Progress always starts at 0% — adjusted afterward via the slider on the task card.
-    _ensureTodoDateBucket(d, dateKey).push({id:_uid(), text, startTime, endTime, priority, progress:0, done:false, createdAt:today(), updatedAt:_nowIso()});
+    _ensureTodoDateBucket(d, dateKey).push({id:_uid(), text, startTime, endTime, lastScheduledStartTime:startTime, lastScheduledEndTime:endTime, priority, progress:0, done:false, createdAt:today(), updatedAt:_nowIso()});
   });
   document.getElementById('td-txt').value   = '';
   document.getElementById('td-start').value = '';
@@ -5909,6 +5911,8 @@ function schedulePlannerTodo(id, startTime, endTime, dateKey = _selectedTodoDate
     if (!task || _todoEffectiveProgress(task) >= 100) return;
     task.startTime = startTime;
     task.endTime = endTime;
+    task.lastScheduledStartTime = startTime;
+    task.lastScheduledEndTime = endTime;
     task.timingStatus = '';
     delete task.timingRecordedAt;
     task.updatedAt = _nowIso();
@@ -6084,7 +6088,7 @@ function logDay() {
     const entry = {
       id: _uid(),
       date: dateKey,
-      tasks: todos.map(t => ({ text:t.text, done:_todoEffectiveProgress(t)>=100, priority:t.priority||'m', progress:_todoEffectiveProgress(t), startTime:t.startTime, endTime:t.endTime, timingStatus:t.timingStatus||'', timingRecordedAt:t.timingRecordedAt||'' })),
+      tasks: todos.map(t => ({ text:t.text, done:_todoEffectiveProgress(t)>=100, priority:t.priority||'m', progress:_todoEffectiveProgress(t), startTime:t.startTime, endTime:t.endTime, lastScheduledStartTime:t.lastScheduledStartTime||t.startTime||'', lastScheduledEndTime:t.lastScheduledEndTime||t.endTime||'', timingStatus:t.timingStatus||'', timingRecordedAt:t.timingRecordedAt||'' })),
       completedCount, skippedCount, completionPct
     };
     DB.update(d => {
@@ -6553,19 +6557,18 @@ function consistencyDeleteTask(kind, date, ref, taskIndex) {
   });
 }
 
-function _consistencyTimingSummary(d, range) {
-  const cutoff = range === 'all' ? null : _consistencyDateKeyOffset((range === '7' ? 7 : 30) - 1);
-  const latest = today();
-  const included = date => date && date <= latest && (!cutoff || date >= cutoff);
+function _consistencyTimingSummary(d) {
   const validStatuses = ['on_time','done','missed'];
   const items = [];
   const addItem = (date, item, source) => {
-    if (!included(date) || !item?.startTime) return;
+    const startTime = item?.startTime || item?.lastScheduledStartTime || '';
+    const endTime = item?.endTime || item?.lastScheduledEndTime || '';
+    if (!date || !startTime) return;
     items.push({
       date,
       text:item.text || 'Untitled task',
-      startTime:item.startTime,
-      endTime:item.endTime || '',
+      startTime,
+      endTime,
       status:validStatuses.includes(item.timingStatus) ? item.timingStatus : '',
       source,
     });
@@ -6615,7 +6618,7 @@ function renderConsistency() {
   const perfectDays = trackedDays.filter(day => _consistencyPct(day) === 100).length;
   const rangeLabel = _consistencyRange === '7' ? '7-Day' : _consistencyRange === '30' ? '30-Day' : 'All-Time';
   const unfinishedTasks = _consistencyUnfinishedTasks(d, _consistencyRange);
-  const timing = _consistencyTimingSummary(d, _consistencyRange);
+  const timing = _consistencyTimingSummary(d);
 
   const details = document.getElementById('consistency-details');
   const unfinishedContent = document.getElementById('consistency-unfinished-content');
@@ -6662,7 +6665,7 @@ function renderConsistency() {
     '':{ label:'Not rated', className:'pending' },
   };
   const timingList = document.getElementById('consistency-timing-list');
-  timingList.innerHTML = timing.items.length ? timing.items.slice(0,12).map(item => {
+  timingList.innerHTML = timing.items.length ? timing.items.map(item => {
     const outcome = timingStatus[item.status] || timingStatus[''];
     const time = [item.startTime,item.endTime].filter(Boolean).join('–');
     return `<div class="consistency-timing-row">
@@ -6670,7 +6673,7 @@ function renderConsistency() {
       <div class="consistency-timing-meta">${fmtDate(item.date)} · ${escHtml(time)} · ${item.source}</div>
       <div class="consistency-timing-status ${outcome.className}">${outcome.label}</div>
     </div>`;
-  }).join('') : '<div class="empty">Schedule tasks in the Day Planner, then tick an outcome to start measuring whether you are sticking to your times.</div>';
+  }).join('') : '<div class="empty">No timed tasks yet. Place a task on the Day Planner timetable and it will appear here automatically.</div>';
 
   const chartDays = days.length > 90 ? days.slice(-90) : days;
   const base = chartDefaults();
