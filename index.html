@@ -655,41 +655,51 @@ nav::-webkit-scrollbar{height:0}
 .planner-datebar .fg{max-width:210px}
 .planner-date-title{flex:1;min-width:220px;padding:9px 0;font-size:14px;font-weight:700;color:var(--t1)}
 .planner-add{margin-bottom:16px}
-.planner-layout{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(0,1.7fr);gap:16px;align-items:start}
-.planner-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.planner-layout{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.7fr);gap:16px;align-items:stretch}
+.planner-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;min-width:0;min-height:0}
 .planner-panel-head{padding:16px;border-bottom:1px solid var(--border)}
 .planner-panel-head h3{font-size:14px;color:var(--t1);margin:0 0 4px}
 .planner-panel-head p{font-size:11.5px;color:var(--t2);line-height:1.5}
-.planner-tray{padding:10px;display:flex;flex-direction:column;gap:8px;max-height:660px;overflow:auto}
-.planner-task{display:flex;align-items:center;gap:9px;padding:11px;border-radius:12px;background:var(--fill);border:1px solid var(--border);cursor:grab;transition:var(--tr);user-select:none}
+.planner-tray{padding:10px;display:flex;flex:1;flex-direction:column;gap:8px;max-height:620px;overflow-y:auto;overflow-x:hidden}
+.planner-task{display:flex;align-items:flex-start;gap:9px;width:100%;min-width:0;padding:11px;border-radius:12px;background:var(--fill);border:1px solid var(--border);cursor:grab;transition:var(--tr);user-select:none}
 .planner-task:hover,.planner-task.selected{border-color:rgba(var(--accent-rgb),.48);background:rgba(var(--accent-rgb),.09)}
 .planner-task.dragging{opacity:.48}
-.planner-task-copy{flex:1;min-width:0}
-.planner-task-name{font-size:12.5px;font-weight:650;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.planner-task-meta{font-size:10.5px;color:var(--t3);margin-top:3px}
-.planner-task-grip{color:var(--t3);font-size:14px;letter-spacing:-2px}
-.planner-timeline{max-height:660px;overflow:auto;scrollbar-gutter:stable}
-.planner-slot{display:grid;grid-template-columns:70px minmax(0,1fr);min-height:70px;border-bottom:1px solid var(--border)}
+.planner-task-copy{display:flex;flex:1;min-width:0;overflow:hidden;flex-direction:column}
+.planner-task-name{display:-webkit-box;font-size:12.5px;font-weight:650;line-height:1.38;color:var(--t1);overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere}
+.planner-task-meta{display:block;font-size:10.5px;line-height:1.35;color:var(--t3);margin-top:5px;overflow-wrap:anywhere}
+.planner-task-grip{color:var(--t3);font-size:14px;line-height:1.4;letter-spacing:-2px;flex:0 0 auto}
+.planner-task .tp{flex:0 0 auto;margin-top:1px}
+.planner-timeline{flex:1;max-height:620px;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable}
+.planner-timeline-grid{position:relative;min-width:0}
+.planner-slot{display:grid;grid-template-columns:70px minmax(0,1fr);height:56px;border-bottom:1px solid var(--border)}
 .planner-slot:last-child{border-bottom:none}
-.planner-time{padding:11px 10px;font-size:11px;font-weight:700;color:var(--t3);text-align:right;border-right:1px solid var(--border);font-feature-settings:"tnum" 1}
-.planner-dropzone{padding:7px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:background .15s;min-width:0}
+.planner-time{padding:8px 10px;font-size:10.5px;font-weight:700;color:var(--t3);text-align:right;border-right:1px solid var(--border);font-feature-settings:"tnum" 1}
+.planner-dropzone{cursor:pointer;transition:background .15s;min-width:0}
 .planner-dropzone:hover,.planner-dropzone.drag-over{background:rgba(var(--accent-rgb),.08)}
-.planner-event{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.28);min-width:0}
+.planner-events-layer{position:absolute;z-index:2;top:0;right:0;bottom:0;left:70px;pointer-events:none}
+.planner-event{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border-radius:10px;background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.38);min-width:0;overflow:hidden}
+.planner-event-positioned{position:absolute;left:9px;right:9px;pointer-events:auto;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 .planner-event.private{background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.25)}
 .planner-event.done{opacity:.56}
 .planner-event-time{font-size:10.5px;font-weight:750;color:var(--accent-2);white-space:nowrap}
 .planner-event.private .planner-event-time{color:var(--info)}
 .planner-event-copy{flex:1;min-width:0;display:flex;flex-direction:column}
-.planner-event-name{font-size:12px;font-weight:650;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.planner-event-name{display:-webkit-box;font-size:12px;font-weight:650;line-height:1.35;color:var(--t1);overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere}
 .planner-event-kind{font-size:9.5px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
 .planner-event .db{flex-shrink:0}
 .planner-empty{padding:22px 14px;text-align:center;color:var(--t3);font-size:12px;line-height:1.55}
-.planner-drop-hint{padding:10px;color:var(--t3);font-size:10.5px;font-style:italic}
 @media(max-width:760px){
   .planner-layout{grid-template-columns:1fr}
   .planner-tray{max-height:280px}
   .planner-timeline{max-height:620px}
   .planner-datebar .fg{max-width:none}
+}
+@media(max-width:520px){
+  .planner-slot{grid-template-columns:56px minmax(0,1fr)}
+  .planner-events-layer{left:56px}
+  .planner-time{padding-left:5px;padding-right:7px}
+  .planner-event-positioned{left:6px;right:6px}
+  .planner-event-time{display:none}
 }
 
 /* ── Calorie Tracker page ── */
@@ -1771,7 +1781,7 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
         <div class="planner-tray" id="planner-todo-tray"></div>
       </aside>
       <section class="planner-panel">
-        <div class="planner-panel-head"><h3 id="planner-timeline-title">Timeline</h3><p>Dropping a to-do schedules it here without creating a duplicate task.</p></div>
+        <div class="planner-panel-head"><h3 id="planner-timeline-title">Timeline</h3><p id="planner-timeline-help">Dropping a to-do schedules it here without creating a duplicate task.</p></div>
         <div class="planner-timeline" id="planner-timeline"></div>
       </section>
     </div>
@@ -5346,6 +5356,7 @@ function updateTodoProgress(orig, val) {
    Planner to-do cards are the same objects used by the dated To-Do List.
    Planner-only events live separately so routines never inflate task totals. */
 let _plannerSelectedTodoId = null;
+const PLANNER_HOUR_HEIGHT = 56;
 
 function _plannerMigrate(d) {
   _todoHistoryMigrate(d);
@@ -5363,6 +5374,23 @@ function _plannerEndTime(startTime) {
   if (!match) return '';
   const minutes = Math.min(1439, (+match[1] * 60) + (+match[2]) + 60);
   return String(Math.floor(minutes / 60)).padStart(2,'0') + ':' + String(minutes % 60).padStart(2,'0');
+}
+
+function _plannerTimeMinutes(time) {
+  const match = /^(\d{2}):(\d{2})$/.exec(time || '');
+  if (!match) return null;
+  return Math.min(1439, (+match[1] * 60) + (+match[2]));
+}
+
+function _plannerEventPosition(event) {
+  const start = _plannerTimeMinutes(event.startTime);
+  if (start == null) return null;
+  const parsedEnd = _plannerTimeMinutes(event.endTime);
+  const end = parsedEnd != null && parsedEnd > start ? parsedEnd : Math.min(1440, start + 60);
+  const top = Math.round((start / 60) * PLANNER_HOUR_HEIGHT) + 3;
+  const naturalHeight = Math.round(((end - start) / 60) * PLANNER_HOUR_HEIGHT) - 6;
+  const remainingHeight = (24 * PLANNER_HOUR_HEIGHT) - top - 3;
+  return { top, height:Math.min(remainingHeight, Math.max(46, naturalHeight)) };
 }
 
 function setPlannerDate(dateStr) {
@@ -5498,7 +5526,9 @@ function _plannerEventHtml(event, kind) {
   const isTodo = kind === 'todo';
   const done = isTodo && _todoEffectiveProgress(event) >= 100;
   const time = [event.startTime, event.endTime].filter(Boolean).join('–');
-  return `<div class="planner-event${isTodo?'':' private'}${done?' done':''}" onclick="event.stopPropagation()">
+  const position = _plannerEventPosition(event);
+  if (!position) return '';
+  return `<div class="planner-event planner-event-positioned${isTodo?'':' private'}${done?' done':''}" style="top:${position.top}px;height:${position.height}px" onclick="event.stopPropagation()">
     ${isTodo ? `<button class="tc${done?' on':''}" title="${done?'Mark unfinished':'Complete task'}" onclick="event.stopPropagation();plannerToggleTodo('${event.id}')">${done?'<svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</button>` : ''}
     <span class="planner-event-time">${escHtml(time)}</span>
     <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span><span class="planner-event-kind">${isTodo?'To-do item':'Planner only'}</span></span>
@@ -5524,6 +5554,10 @@ function renderPlanner() {
     if (a.startTime && b.startTime) return a.startTime.localeCompare(b.startTime);
     return ({h:0,m:1,l:2}[a.priority] ?? 1) - ({h:0,m:1,l:2}[b.priority] ?? 1);
   });
+  const selectedTask = activeTodos.find(task => task.id === _plannerSelectedTodoId);
+  document.getElementById('planner-timeline-help').textContent = selectedTask
+    ? `Selected: ${selectedTask.text}. Tap a time slot to place it.`
+    : 'Drop a to-do onto a time slot. Event height matches its scheduled duration.';
   document.getElementById('planner-todo-tray').innerHTML = activeTodos.length ? activeTodos.map(task => {
     const progress = _todoEffectiveProgress(task);
     const scheduled = task.startTime ? `${task.startTime}${task.endTime?'–'+task.endTime:''}` : 'Not scheduled';
@@ -5539,20 +5573,17 @@ function renderPlanner() {
   const slots = [];
   for (let hour = 0; hour < 24; hour++) {
     const startTime = String(hour).padStart(2,'0') + ':00';
-    const todoEvents = todos.filter(task => task.startTime && parseInt(task.startTime.slice(0,2)) === hour);
-    const privateEvents = plannerEvents.filter(item => item.startTime && parseInt(item.startTime.slice(0,2)) === hour);
-    const cards = [
-      ...todoEvents.map(task => _plannerEventHtml(task,'todo')),
-      ...privateEvents.map(item => _plannerEventHtml(item,'private')),
-    ].join('');
-    const hint = !cards && _plannerSelectedTodoId ? '<div class="planner-drop-hint">Tap to place selected task here</div>' : '';
-    slots.push(`<div class="planner-slot"><div class="planner-time">${startTime}</div><div class="planner-dropzone" onclick="plannerSlotClick('${startTime}')" ondragover="plannerDragOver(event)" ondragleave="plannerDragLeave(event)" ondrop="plannerDrop(event,'${startTime}')">${cards}${hint}</div></div>`);
+    slots.push(`<div class="planner-slot"><div class="planner-time">${startTime}</div><div class="planner-dropzone" onclick="plannerSlotClick('${startTime}')" ondragover="plannerDragOver(event)" ondragleave="plannerDragLeave(event)" ondrop="plannerDrop(event,'${startTime}')"></div></div>`);
   }
-  timeline.innerHTML = slots.join('');
+  const eventCards = [
+    ...todos.filter(task => task.startTime).map(task => _plannerEventHtml(task,'todo')),
+    ...plannerEvents.filter(item => item.startTime).map(item => _plannerEventHtml(item,'private')),
+  ].join('');
+  timeline.innerHTML = `<div class="planner-timeline-grid">${slots.join('')}<div class="planner-events-layer">${eventCards}</div></div>`;
   if (timeline.dataset.ready) timeline.scrollTop = oldScroll;
   else {
     timeline.dataset.ready = 'true';
-    requestAnimationFrame(() => { timeline.scrollTop = 6 * 70; });
+    requestAnimationFrame(() => { timeline.scrollTop = 6 * PLANNER_HOUR_HEIGHT; });
   }
 }
 

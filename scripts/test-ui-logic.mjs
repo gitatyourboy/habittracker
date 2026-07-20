@@ -79,6 +79,10 @@ const tests = `
 
   assert.equal(_plannerEndTime('06:30'), '07:30');
   assert.equal(_plannerEndTime('23:30'), '23:59');
+  assert.equal(_plannerTimeMinutes('05:30'), 330);
+  const longEventPosition = _plannerEventPosition({ startTime:'05:00', endTime:'11:11' });
+  assert.equal(longEventPosition.top, 283);
+  assert.ok(longEventPosition.height > 300, 'long events should span multiple time rows');
 `;
 
 const sourceWithoutInit = inlineScript.replace(/\ninitApp\(\);\s*$/, '');
