@@ -613,7 +613,25 @@ nav::-webkit-scrollbar{height:0}
 .consistency-count{font-size:11.5px;color:var(--t2);white-space:nowrap;text-align:right}
 .consistency-pct{font-size:17px;font-weight:800;text-align:right;font-feature-settings:"tnum" 1}
 .consistency-empty-day{color:var(--t3)}
+.consistency-cover{width:100%;display:flex;align-items:center;gap:18px;text-align:left;padding:22px 24px;margin-bottom:14px;background:linear-gradient(135deg,rgba(var(--accent-rgb),.16),rgba(var(--accent-rgb),.055));border:1px solid rgba(var(--accent-rgb),.28);border-radius:20px;color:var(--t1);font-family:inherit;cursor:pointer;transition:var(--tr)}
+.consistency-cover:hover{border-color:rgba(var(--accent-rgb),.52);background:linear-gradient(135deg,rgba(var(--accent-rgb),.22),rgba(var(--accent-rgb),.08));transform:translateY(-1px)}
+.consistency-cover-copy{flex:1;min-width:0}
+.consistency-cover-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--accent-2);margin-bottom:5px}
+.consistency-cover-sub{font-size:12px;color:var(--t2)}
+.consistency-cover-value{font-size:clamp(32px,5vw,48px);font-weight:800;letter-spacing:-.04em;font-feature-settings:"tnum" 1;white-space:nowrap}
+.consistency-chevron{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(var(--accent-rgb),.14);color:var(--accent-2);font-size:14px;transition:transform .2s ease;flex-shrink:0}
+.consistency-chevron.open{transform:rotate(180deg)}
+.consistency-fold-content{display:none}
+.consistency-fold-content.open{display:block;animation:fu .25s ease both}
+.consistency-fold-head{width:100%;display:flex;align-items:center;gap:12px;background:none;border:none;color:var(--t1);font-family:inherit;text-align:left;cursor:pointer;padding:0}
+.consistency-fold-title{flex:1;font-size:14px;font-weight:700}
+.consistency-fold-count{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(248,113,113,.12);color:#f87171}
+.consistency-missed-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.consistency-missed-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;background:var(--fill);border:1px solid var(--border);flex-wrap:wrap}
+.consistency-missed-name{flex:1;min-width:150px;font-size:13px;font-weight:600;color:var(--t1)}
+.consistency-missed-meta{font-size:11px;color:var(--t3);white-space:nowrap}
 @media(max-width:650px){
+  .consistency-cover{padding:18px 16px;gap:12px}
   .consistency-day{grid-template-columns:1fr auto;gap:8px 12px}
   .consistency-progress{grid-column:1/-1;order:3}
   .consistency-count{grid-column:1;grid-row:2;text-align:left}
@@ -1676,31 +1694,53 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
   <div class="sp">
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>Momentum</span><h1>Consistency Checker</h1><p>See the percentage of your to-do list completed each day</p></div>
 
-    <div class="analytics-mets" id="consistency-metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px"></div>
-
-    <div class="cc" style="margin-bottom:16px">
-      <div class="analytics-hdr">
-        <div>
-          <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Daily Completion Trend</h3>
-          <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Completed tasks as a percentage of everything planned</p>
-        </div>
-        <div class="seg-ctrl" id="consistency-range-ctrl">
-          <button type="button" class="seg-btn" id="consistency-range-7" onclick="setConsistencyRange('7')">7 Days</button>
-          <button type="button" class="seg-btn active" id="consistency-range-30" onclick="setConsistencyRange('30')">30 Days</button>
-          <button type="button" class="seg-btn" id="consistency-range-all" onclick="setConsistencyRange('all')">All Time</button>
-        </div>
+    <button type="button" class="consistency-cover" onclick="toggleConsistencyDetails()" aria-controls="consistency-details" aria-expanded="false" id="consistency-cover">
+      <div class="consistency-cover-copy">
+        <div class="consistency-cover-label">Average Completion Percentage</div>
+        <div class="consistency-cover-sub" id="consistency-cover-sub">Open to view your daily breakdown</div>
       </div>
-      <div class="cb" style="height:280px"><canvas id="consistency-chart"></canvas></div>
+      <div class="consistency-cover-value" id="consistency-cover-value">—</div>
+      <div class="consistency-chevron" id="consistency-cover-chevron">▼</div>
+    </button>
+
+    <div class="consistency-fold-content" id="consistency-details">
+      <div class="analytics-mets" id="consistency-metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px"></div>
+
+      <div class="cc" style="margin-bottom:16px">
+        <div class="analytics-hdr">
+          <div>
+            <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Daily Completion Trend</h3>
+            <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Completed tasks as a percentage of everything planned</p>
+          </div>
+          <div class="seg-ctrl" id="consistency-range-ctrl">
+            <button type="button" class="seg-btn" id="consistency-range-7" onclick="setConsistencyRange('7')">7 Days</button>
+            <button type="button" class="seg-btn active" id="consistency-range-30" onclick="setConsistencyRange('30')">30 Days</button>
+            <button type="button" class="seg-btn" id="consistency-range-all" onclick="setConsistencyRange('all')">All Time</button>
+          </div>
+        </div>
+        <div class="cb" style="height:280px"><canvas id="consistency-chart"></canvas></div>
+      </div>
+
+      <div class="cc" style="margin-bottom:16px">
+        <div class="analytics-hdr">
+          <div>
+            <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Day-by-Day Results</h3>
+            <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Live lists and logged days are combined automatically</p>
+          </div>
+        </div>
+        <div class="consistency-list" id="consistency-daily-list"></div>
+      </div>
     </div>
 
     <div class="cc">
-      <div class="analytics-hdr">
-        <div>
-          <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Day-by-Day Results</h3>
-          <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Live lists and logged days are combined automatically</p>
-        </div>
+      <button type="button" class="consistency-fold-head" onclick="toggleConsistencyUnfinished()" aria-controls="consistency-unfinished-content" aria-expanded="false" id="consistency-unfinished-toggle">
+        <span class="consistency-fold-title">Unfinished Tasks</span>
+        <span class="consistency-fold-count" id="consistency-unfinished-count">0 tasks</span>
+        <span class="consistency-chevron" id="consistency-unfinished-chevron">▼</span>
+      </button>
+      <div class="consistency-fold-content" id="consistency-unfinished-content">
+        <div class="consistency-missed-list" id="consistency-unfinished-list"></div>
       </div>
-      <div class="consistency-list" id="consistency-daily-list"></div>
     </div>
   </div>
 </div>
@@ -5464,6 +5504,18 @@ function _generateTodoAISummary({ weeklyRate, avgProgressWeek, nameList, mostSki
    Combines logged to-do history with live per-date task lists so the daily
    percentage is useful both before and after a day is formally logged. */
 let _consistencyRange = '30';
+let _consistencyDetailsOpen = false;
+let _consistencyUnfinishedOpen = false;
+
+function toggleConsistencyDetails() {
+  _consistencyDetailsOpen = !_consistencyDetailsOpen;
+  renderConsistency();
+}
+
+function toggleConsistencyUnfinished() {
+  _consistencyUnfinishedOpen = !_consistencyUnfinishedOpen;
+  renderConsistency();
+}
 
 function setConsistencyRange(range) {
   _consistencyRange = ['7','30','all'].includes(range) ? range : '30';
@@ -5536,9 +5588,32 @@ function _consistencyStreak(records) {
   return streak;
 }
 
+function _consistencyUnfinishedTasks(d, range) {
+  const cutoff = range === 'all' ? null : _consistencyDateKeyOffset((range === '7' ? 7 : 30) - 1);
+  const latest = today();
+  const included = date => date && date <= latest && (!cutoff || date >= cutoff);
+  const tasks = [];
+
+  (d.todoHistory || []).forEach(day => {
+    if (!included(day?.date)) return;
+    (day.tasks || []).forEach(task => {
+      if (task && !task.done) tasks.push({ date:day.date, text:task.text || 'Untitled task', priority:task.priority || 'm', source:'Logged' });
+    });
+  });
+
+  Object.entries(d.todosByDate || {}).forEach(([date, dayTasks]) => {
+    if (!included(date) || !Array.isArray(dayTasks)) return;
+    dayTasks.forEach(task => {
+      if (task && !task.done) tasks.push({ date, text:task.text || 'Untitled task', priority:task.priority || 'm', source:'Live' });
+    });
+  });
+
+  return tasks.sort((a,b) => b.date.localeCompare(a.date) || a.text.localeCompare(b.text));
+}
+
 function renderConsistency() {
-  DB.update(d => _todoHistoryMigrate(d));
   const d = DB.get();
+  _todoHistoryMigrate(d);
   const records = _consistencyRecords(d);
   const days = _consistencyDays(records, _consistencyRange);
   const trackedDays = days.filter(day => day.total > 0);
@@ -5553,6 +5628,20 @@ function renderConsistency() {
   const streak = _consistencyStreak(records);
   const perfectDays = trackedDays.filter(day => _consistencyPct(day) === 100).length;
   const rangeLabel = _consistencyRange === '7' ? '7-Day' : _consistencyRange === '30' ? '30-Day' : 'All-Time';
+  const unfinishedTasks = _consistencyUnfinishedTasks(d, _consistencyRange);
+
+  const details = document.getElementById('consistency-details');
+  const unfinishedContent = document.getElementById('consistency-unfinished-content');
+  details.classList.toggle('open', _consistencyDetailsOpen);
+  unfinishedContent.classList.toggle('open', _consistencyUnfinishedOpen);
+  document.getElementById('consistency-cover').setAttribute('aria-expanded', String(_consistencyDetailsOpen));
+  document.getElementById('consistency-unfinished-toggle').setAttribute('aria-expanded', String(_consistencyUnfinishedOpen));
+  document.getElementById('consistency-cover-chevron').classList.toggle('open', _consistencyDetailsOpen);
+  document.getElementById('consistency-unfinished-chevron').classList.toggle('open', _consistencyUnfinishedOpen);
+  document.getElementById('consistency-cover-value').textContent = trackedDays.length ? dailyAverage + '%' : '—';
+  document.getElementById('consistency-cover-value').style.color = _consistencyColor(trackedDays.length ? dailyAverage : null);
+  document.getElementById('consistency-cover-sub').textContent = `${rangeLabel} average · ${trackedDays.length} day${trackedDays.length===1?'':'s'} with tasks · ${_consistencyDetailsOpen?'Click to hide details':'Click to view daily details'}`;
+  document.getElementById('consistency-unfinished-count').textContent = `${unfinishedTasks.length} task${unfinishedTasks.length===1?'':'s'}`;
 
   ['7','30','all'].forEach(range => {
     const button = document.getElementById('consistency-range-' + range);
@@ -5569,7 +5658,7 @@ function renderConsistency() {
 
   const chartDays = days.length > 90 ? days.slice(-90) : days;
   const base = chartDefaults();
-  makeChart('consistency-chart', {
+  if (_consistencyDetailsOpen) makeChart('consistency-chart', {
     type: 'bar',
     data: {
       labels: chartDays.map(day => new Date(day.date + 'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})),
@@ -5613,23 +5702,32 @@ function renderConsistency() {
   const listDays = [...days].reverse();
   if (!listDays.length) {
     list.innerHTML = '<div class="empty">No task days yet — add tasks in your To-Do List to start tracking consistency.</div>';
-    return;
+  } else {
+    list.innerHTML = listDays.map(day => {
+      const pct = _consistencyPct(day);
+      const color = _consistencyColor(pct);
+      const weekday = new Date(day.date + 'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'});
+      const source = day.logged && day.live ? 'Logged + live' : day.logged ? 'Logged' : day.live ? 'Live' : 'No tasks planned';
+      return `<div class="consistency-day${pct==null?' consistency-empty-day':''}">
+        <div class="consistency-date">${fmtDate(day.date)}<span>${weekday} · ${source}</span></div>
+        <div class="consistency-progress">
+          <div class="consistency-track"><div class="consistency-fill" style="width:${pct||0}%;background:${color}"></div></div>
+        </div>
+        <div class="consistency-count">${day.total ? `${day.done} of ${day.total} tasks` : 'No tasks'}</div>
+        <div class="consistency-pct" style="color:${color}">${pct==null?'—':pct+'%'}</div>
+      </div>`;
+    }).join('');
   }
 
-  list.innerHTML = listDays.map(day => {
-    const pct = _consistencyPct(day);
-    const color = _consistencyColor(pct);
-    const weekday = new Date(day.date + 'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'});
-    const source = day.logged && day.live ? 'Logged + live' : day.logged ? 'Logged' : day.live ? 'Live' : 'No tasks planned';
-    return `<div class="consistency-day${pct==null?' consistency-empty-day':''}">
-      <div class="consistency-date">${fmtDate(day.date)}<span>${weekday} · ${source}</span></div>
-      <div class="consistency-progress">
-        <div class="consistency-track"><div class="consistency-fill" style="width:${pct||0}%;background:${color}"></div></div>
-      </div>
-      <div class="consistency-count">${day.total ? `${day.done} of ${day.total} tasks` : 'No tasks'}</div>
-      <div class="consistency-pct" style="color:${color}">${pct==null?'—':pct+'%'}</div>
-    </div>`;
-  }).join('');
+  const unfinishedList = document.getElementById('consistency-unfinished-list');
+  const priorityLabel = { h:'High', m:'Medium', l:'Low' };
+  unfinishedList.innerHTML = unfinishedTasks.length ? unfinishedTasks.map(task => `
+    <div class="consistency-missed-row">
+      <span style="color:#f87171">○</span>
+      <span class="consistency-missed-name">${escHtml(task.text)}</span>
+      <span class="tp ${task.priority}">${priorityLabel[task.priority] || 'Medium'}</span>
+      <span class="consistency-missed-meta">${fmtDate(task.date)} · ${task.source}</span>
+    </div>`).join('') : '<div class="empty">No unfinished tasks in this period — nice work.</div>';
 }
 
 /* CALORIE TRACKER PAGE (retired UI retained below) */
