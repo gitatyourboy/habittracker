@@ -14,6 +14,7 @@ assert.match(html, /Did it on time/, 'planner items should expose the on-time ou
 assert.match(html, /Did not do it/, 'planner items should expose the missed outcome');
 assert.match(html, /id="consistency-timing-metrics"/, 'consistency should include task timing metrics');
 assert.ok(html.indexOf('id="consistency-timing-metrics"') < html.indexOf('id="consistency-details"'), 'task timing should remain visible outside collapsed completion details');
+assert.match(html, /function toggleConsistencyTiming/, 'the Timing section should be foldable');
 const inlineScript = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
   .find(source => source.includes('const DB ='));
@@ -123,12 +124,13 @@ const tests = `
   scheduleData.todosByDate[futureTimingDate] = [{ id:'future-1', text:'Future task', startTime:'12:00', endTime:'13:00' }];
   scheduleData.todosByDate[dateKey].push({ id:'removed-time-1', text:'Was scheduled', startTime:'', endTime:'', lastScheduledStartTime:'14:00', lastScheduledEndTime:'15:00' });
   const timing = _consistencyTimingSummary(scheduleData);
-  assert.equal(timing.items.length, 5);
+  assert.equal(timing.items.length, 4);
+  assert.equal(timing.items.some(item => item.date === futureTimingDate), false);
   assert.equal(timing.evaluated.length, 3);
   assert.equal(timing.onTime, 1);
   assert.equal(timing.done, 1);
   assert.equal(timing.missed, 1);
-  assert.equal(timing.pending, 2);
+  assert.equal(timing.pending, 1);
   assert.equal(timing.score, 33);
 
   const lockedData = DB.defaults();

@@ -639,6 +639,7 @@ nav::-webkit-scrollbar{height:0}
 .consistency-fold-head{width:100%;display:flex;align-items:center;gap:12px;background:none;border:none;color:var(--t1);font-family:inherit;text-align:left;cursor:pointer;padding:0}
 .consistency-fold-title{flex:1;font-size:14px;font-weight:700}
 .consistency-fold-count{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(248,113,113,.12);color:#f87171}
+.consistency-fold-count.timing{background:rgba(var(--accent-rgb),.12);color:var(--accent-2)}
 .consistency-missed-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .consistency-missed-row{display:block;padding:11px 13px;border-radius:10px;background:var(--fill);border:1px solid var(--border)}
 .consistency-missed-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
@@ -646,6 +647,7 @@ nav::-webkit-scrollbar{height:0}
 .consistency-missed-meta{font-size:11px;color:var(--t3);white-space:nowrap}
 .consistency-missed-progress{display:flex;align-items:center;gap:8px;padding:10px 0 0 29px}
 .consistency-timing-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 0}
+.consistency-timing-intro{font-size:12px;color:var(--t2);line-height:1.5;margin-top:12px}
 .consistency-timing-stat{padding:13px 10px;border-radius:12px;background:var(--fill);border:1px solid var(--border);text-align:center;min-width:0}
 .consistency-timing-value{font-size:21px;font-weight:800;color:var(--t1);font-feature-settings:"tnum" 1}
 .consistency-timing-label{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.35px;margin-top:4px;line-height:1.25}
@@ -1947,14 +1949,16 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
     </button>
 
     <div class="cc" style="margin-bottom:16px">
-      <div class="analytics-hdr">
-        <div>
-          <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Timing of Tasks</h3>
-          <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Every task placed on your timetable appears here. “Did it” means completed, but outside the planned time.</p>
-        </div>
+      <button type="button" class="consistency-fold-head" onclick="toggleConsistencyTiming()" aria-controls="consistency-timing-content" aria-expanded="false" id="consistency-timing-toggle">
+        <span class="consistency-fold-title">Timing</span>
+        <span class="consistency-fold-count timing" id="consistency-timing-count">0 tasks</span>
+        <span class="consistency-chevron" id="consistency-timing-chevron">▼</span>
+      </button>
+      <div class="consistency-fold-content" id="consistency-timing-content">
+        <p class="consistency-timing-intro">Timed tasks appear here on their scheduled day. “Did it” means completed, but outside the planned time.</p>
+        <div class="consistency-timing-grid" id="consistency-timing-metrics"></div>
+        <div class="consistency-timing-list" id="consistency-timing-list"></div>
       </div>
-      <div class="consistency-timing-grid" id="consistency-timing-metrics"></div>
-      <div class="consistency-timing-list" id="consistency-timing-list"></div>
     </div>
 
     <div class="consistency-fold-content" id="consistency-details">
@@ -6359,10 +6363,16 @@ function _generateTodoAISummary({ weeklyRate, avgProgressWeek, nameList, mostSki
    percentage is useful both before and after a day is formally logged. */
 let _consistencyRange = '30';
 let _consistencyDetailsOpen = false;
+let _consistencyTimingOpen = false;
 let _consistencyUnfinishedOpen = false;
 
 function toggleConsistencyDetails() {
   _consistencyDetailsOpen = !_consistencyDetailsOpen;
+  renderConsistency();
+}
+
+function toggleConsistencyTiming() {
+  _consistencyTimingOpen = !_consistencyTimingOpen;
   renderConsistency();
 }
 
@@ -6559,11 +6569,12 @@ function consistencyDeleteTask(kind, date, ref, taskIndex) {
 
 function _consistencyTimingSummary(d) {
   const validStatuses = ['on_time','done','missed'];
+  const latest = today();
   const items = [];
   const addItem = (date, item, source) => {
     const startTime = item?.startTime || item?.lastScheduledStartTime || '';
     const endTime = item?.endTime || item?.lastScheduledEndTime || '';
-    if (!date || !startTime) return;
+    if (!date || date > latest || !startTime) return;
     items.push({
       date,
       text:item.text || 'Untitled task',
@@ -6621,12 +6632,16 @@ function renderConsistency() {
   const timing = _consistencyTimingSummary(d);
 
   const details = document.getElementById('consistency-details');
+  const timingContent = document.getElementById('consistency-timing-content');
   const unfinishedContent = document.getElementById('consistency-unfinished-content');
   details.classList.toggle('open', _consistencyDetailsOpen);
+  timingContent.classList.toggle('open', _consistencyTimingOpen);
   unfinishedContent.classList.toggle('open', _consistencyUnfinishedOpen);
   document.getElementById('consistency-cover').setAttribute('aria-expanded', String(_consistencyDetailsOpen));
+  document.getElementById('consistency-timing-toggle').setAttribute('aria-expanded', String(_consistencyTimingOpen));
   document.getElementById('consistency-unfinished-toggle').setAttribute('aria-expanded', String(_consistencyUnfinishedOpen));
   document.getElementById('consistency-cover-chevron').classList.toggle('open', _consistencyDetailsOpen);
+  document.getElementById('consistency-timing-chevron').classList.toggle('open', _consistencyTimingOpen);
   document.getElementById('consistency-unfinished-chevron').classList.toggle('open', _consistencyUnfinishedOpen);
   document.getElementById('consistency-cover-value').textContent = trackedDays.length ? dailyAverage + '%' : '—';
   document.getElementById('consistency-cover-value').style.color = _consistencyColor(trackedDays.length ? dailyAverage : null);
@@ -6636,6 +6651,7 @@ function renderConsistency() {
     element.style.color = _consistencyColor(pct);
   });
   document.getElementById('consistency-cover-sub').textContent = `${rangeLabel} average · ${trackedDays.length} day${trackedDays.length===1?'':'s'} with tasks · ${_consistencyDetailsOpen?'Click to hide details':'Click to view daily details'}`;
+  document.getElementById('consistency-timing-count').textContent = `${timing.items.length} task${timing.items.length===1?'':'s'}`;
   document.getElementById('consistency-unfinished-count').textContent = `${unfinishedTasks.length} task${unfinishedTasks.length===1?'':'s'}`;
 
   ['7','30','all'].forEach(range => {
