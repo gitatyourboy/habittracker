@@ -10,6 +10,9 @@ assert.match(html, /function plannerPointerStart/, 'mobile pointer dragging shou
 assert.match(html, />Set time<\//, 'mobile planner should provide a direct scheduling fallback');
 assert.match(html, /toggleTodoLock/, 'to-do items should expose a lock control');
 assert.match(html, /togglePlannerItemLock/, 'planner items should expose a lock control');
+assert.match(html, /Did it on time/, 'planner items should expose the on-time outcome');
+assert.match(html, /Did not do it/, 'planner items should expose the missed outcome');
+assert.match(html, /id="consistency-timing-metrics"/, 'consistency should include task timing metrics');
 const inlineScript = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
   .find(source => source.includes('const DB ='));
@@ -103,6 +106,24 @@ const tests = `
   schedulePlannerTodo('scheduled-1', '08:15', '09:45', dateKey);
   assert.equal(scheduleData.todosByDate[dateKey][0].startTime, '08:15');
   assert.equal(scheduleData.todosByDate[dateKey][0].endTime, '09:45');
+  setPlannerOutcome('todo', 'scheduled-1', 'on_time');
+  assert.equal(scheduleData.todosByDate[dateKey][0].timingStatus, 'on_time');
+  assert.equal(scheduleData.todosByDate[dateKey][0].done, true);
+  assert.equal(scheduleData.todosByDate[dateKey][0].progress, 100);
+  setPlannerOutcome('todo', 'scheduled-1', 'missed');
+  assert.equal(scheduleData.todosByDate[dateKey][0].timingStatus, 'missed');
+  assert.equal(scheduleData.todosByDate[dateKey][0].done, false);
+  assert.equal(scheduleData.todosByDate[dateKey][0].progress, 0);
+  scheduleData.plannerEventsByDate[dateKey] = [
+    { id:'event-1', text:'Workout', startTime:'10:00', endTime:'11:00', timingStatus:'on_time' },
+    { id:'event-2', text:'Read', startTime:'20:00', endTime:'20:30', timingStatus:'done' },
+  ];
+  const timing = _consistencyTimingSummary(scheduleData, '7');
+  assert.equal(timing.evaluated.length, 3);
+  assert.equal(timing.onTime, 1);
+  assert.equal(timing.done, 1);
+  assert.equal(timing.missed, 1);
+  assert.equal(timing.score, 33);
 
   const lockedData = DB.defaults();
   lockedData.todosByDate[dateKey] = [{ id:'daily-task', text:'Read', priority:'h', progress:65, done:false }];

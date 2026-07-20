@@ -431,7 +431,8 @@ nav::-webkit-scrollbar{height:0}
 .tt{flex:1;font-size:13px;color:rgba(255,255,255,.82)}
 .tt.done{text-decoration:line-through;color:var(--t3)}
 .tdue{font-size:11px;color:var(--t3);white-space:nowrap}
-.ttime{font-size:11.5px;color:var(--pl);white-space:nowrap;font-weight:600;letter-spacing:.2px}
+.ttime{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--accent-2);white-space:nowrap;font-weight:700;letter-spacing:.1px;padding:4px 8px;border:1px solid rgba(var(--accent-rgb),.24);border-radius:999px;background:rgba(var(--accent-rgb),.09)}
+.ttime svg{width:12px;height:12px;flex-shrink:0}
 .tprog{display:flex;align-items:center;gap:8px;padding:2px 13px 10px 42px}
 .tprog-track{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
 .tprog-fill{height:100%;border-radius:2px;transition:width .3s ease,background .3s ease}
@@ -644,6 +645,19 @@ nav::-webkit-scrollbar{height:0}
 .consistency-missed-name{flex:1;min-width:150px;font-size:13px;font-weight:600;color:var(--t1)}
 .consistency-missed-meta{font-size:11px;color:var(--t3);white-space:nowrap}
 .consistency-missed-progress{display:flex;align-items:center;gap:8px;padding:10px 0 0 29px}
+.consistency-timing-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 0}
+.consistency-timing-stat{padding:13px 10px;border-radius:12px;background:var(--fill);border:1px solid var(--border);text-align:center;min-width:0}
+.consistency-timing-value{font-size:21px;font-weight:800;color:var(--t1);font-feature-settings:"tnum" 1}
+.consistency-timing-label{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.35px;margin-top:4px;line-height:1.25}
+.consistency-timing-list{display:flex;flex-direction:column;gap:7px}
+.consistency-timing-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--fill);border:1px solid var(--border)}
+.consistency-timing-task{min-width:0;font-size:12.5px;font-weight:650;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.consistency-timing-meta{font-size:10.5px;color:var(--t3);white-space:nowrap}
+.consistency-timing-status{font-size:10px;font-weight:750;padding:4px 8px;border-radius:999px;white-space:nowrap}
+.consistency-timing-status.on_time{color:#34d399;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.22)}
+.consistency-timing-status.done{color:#fbbf24;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.22)}
+.consistency-timing-status.missed{color:#f87171;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.22)}
+.consistency-timing-status.pending{color:var(--t3);background:rgba(255,255,255,.05);border:1px solid var(--border)}
 @media(max-width:650px){
   .consistency-cover{padding:18px 16px;gap:12px;flex-wrap:wrap}
   .consistency-cover-copy{flex-basis:calc(100% - 48px)}
@@ -655,6 +669,11 @@ nav::-webkit-scrollbar{height:0}
   .consistency-count{grid-column:1;grid-row:2;text-align:left}
   .consistency-pct{grid-column:2;grid-row:1/3}
   .consistency-missed-progress{padding-left:0}
+  .consistency-timing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .consistency-timing-stat:first-child{grid-column:1/-1}
+  .consistency-timing-row{grid-template-columns:minmax(0,1fr) auto;gap:5px 8px}
+  .consistency-timing-meta{grid-column:1}
+  .consistency-timing-status{grid-column:2;grid-row:1/3}
 }
 
 /* Day planner */
@@ -687,15 +706,22 @@ nav::-webkit-scrollbar{height:0}
 .planner-dropzone{cursor:pointer;transition:background .15s;min-width:0}
 .planner-dropzone:hover,.planner-dropzone.drag-over{background:rgba(var(--accent-rgb),.08)}
 .planner-events-layer{position:absolute;z-index:2;top:0;right:0;bottom:0;left:70px;pointer-events:none}
-.planner-event{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border-radius:10px;background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.38);min-width:0;overflow:hidden}
+.planner-event{display:flex;align-items:flex-start;gap:9px;padding:6px 8px;border-radius:10px;background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.38);min-width:0;overflow:hidden}
 .planner-event-positioned{position:absolute;left:9px;right:9px;pointer-events:auto;box-shadow:0 6px 20px rgba(0,0,0,.18)}
 .planner-event.private{background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.25)}
-.planner-event.done{opacity:.56}
+.planner-event.done{opacity:.82}
 .planner-event-time{font-size:10.5px;font-weight:750;color:var(--accent-2);white-space:nowrap}
 .planner-event.private .planner-event-time{color:var(--info)}
 .planner-event-copy{flex:1;min-width:0;display:flex;flex-direction:column}
 .planner-event-name{display:-webkit-box;font-size:12px;font-weight:650;line-height:1.35;color:var(--t1);overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere}
 .planner-event-kind{font-size:9.5px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.planner-outcomes{display:flex;align-items:center;gap:3px;margin-top:4px;min-width:0}
+.planner-outcome{display:inline-flex;align-items:center;gap:3px;min-width:0;padding:2px 4px;border:1px solid rgba(255,255,255,.12);border-radius:5px;background:rgba(255,255,255,.045);color:var(--t3);font:700 8.5px var(--font-ui);line-height:1.2;white-space:nowrap;cursor:pointer;transition:var(--tr)}
+.planner-outcome-box{width:9px;height:9px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 9px;border:1px solid currentColor;border-radius:2px;font-size:7px;line-height:1}
+.planner-outcome:hover{color:var(--t1);border-color:rgba(255,255,255,.25)}
+.planner-outcome.selected.on_time{color:#34d399;border-color:rgba(52,211,153,.36);background:rgba(52,211,153,.12)}
+.planner-outcome.selected.done{color:#fbbf24;border-color:rgba(251,191,36,.36);background:rgba(251,191,36,.12)}
+.planner-outcome.selected.missed{color:#f87171;border-color:rgba(248,113,113,.36);background:rgba(248,113,113,.12)}
 .planner-event .db{flex-shrink:0}
 .planner-empty{padding:22px 14px;text-align:center;color:var(--t3);font-size:12px;line-height:1.55}
 .planner-drag-ghost{position:fixed;z-index:5000;pointer-events:none;opacity:.92;transform:translate(-18px,-18px);box-shadow:0 18px 45px rgba(0,0,0,.5);background:var(--surface)}
@@ -716,6 +742,7 @@ nav::-webkit-scrollbar{height:0}
   .planner-mobile-schedule{display:inline-flex;font-size:11px;padding:6px 9px}
   .planner-event-name{font-size:13.5px}
   .planner-event-kind{font-size:10px}
+  .planner-outcome{font-size:8px;padding:2px 3px}
   .planner-time{font-size:11px}
 }
 @media(max-width:520px){
@@ -734,7 +761,12 @@ nav::-webkit-scrollbar{height:0}
 
   .todo-datebar{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch!important;padding:14px;gap:10px}
   .todo-datebar .fg{width:100%;max-width:none!important;min-width:0!important}
+  /* Native date controls otherwise retain an intrinsic minimum width on mobile,
+     which lets the calendar text/icon sit outside the card. */
+  .todo-date-field input[type="date"],.planner-date-field input[type="date"]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-family:var(--font-ui);font-size:13px;font-weight:500;line-height:1.2}
+  .todo-date-field input[type="date"]::-webkit-datetime-edit,.planner-date-field input[type="date"]::-webkit-datetime-edit{font-family:var(--font-ui);padding:0}
   .todo-viewing-field{padding-top:2px}
+  #td-date-label,.planner-date-title{font-family:var(--font-ui);font-weight:700;letter-spacing:inherit}
   #td-date-label{padding:3px 0!important;font-size:15px!important;line-height:1.35}
   #todo-sync-status{width:auto;max-width:100%;align-self:flex-start}
 
@@ -761,7 +793,7 @@ nav::-webkit-scrollbar{height:0}
 
   #todo-list .ti-row{padding:13px 12px;gap:8px;flex-wrap:wrap}
   #todo-list .tt{flex:1 1 calc(100% - 38px);min-width:0!important;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
-  #todo-list .ttime{margin-left:27px;font-size:11.5px}
+  #todo-list .ttime{margin-left:27px;font-size:10.5px;max-width:calc(100% - 27px);overflow:hidden;text-overflow:ellipsis}
   #todo-list .tp{font-size:10.5px;padding:3px 8px}
   #todo-list .lock-btn{width:29px;height:29px}
   #todo-list .db{width:25px;height:29px}
@@ -770,7 +802,7 @@ nav::-webkit-scrollbar{height:0}
 
   .planner-datebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;padding:14px;gap:9px}
   .planner-datebar .fg,.planner-date-field{grid-column:1/-1;width:100%;max-width:none!important;min-width:0!important}
-  .planner-date-title{grid-column:1/-1;width:100%;min-width:0;padding:3px 0 6px}
+  .planner-date-title{grid-column:1/-1;width:100%;min-width:0;padding:3px 0 6px;font-size:15px;line-height:1.35}
   .planner-datebar .sbtn{width:100%;min-width:0;padding:10px 6px;font-size:13px}
 
   .planner-add{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;padding:14px;gap:11px 9px}
@@ -779,7 +811,7 @@ nav::-webkit-scrollbar{height:0}
   .planner-add input[type="time"]{display:block;width:100%;min-width:0;max-width:100%}
   .planner-add-btn{width:100%}
 
-  .planner-event{gap:6px;padding:8px}
+  .planner-event{gap:6px;padding:6px}
   .planner-event .lock-btn{width:28px;height:28px}
   .planner-event .db{width:22px;height:28px}
 }
@@ -1896,7 +1928,7 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
 <!-- ═══ CONSISTENCY PAGE ═══ -->
 <div id="page-consistency" class="page">
   <div class="sp">
-    <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>Momentum</span><h1>Consistency Checker</h1><p>See the percentage of your to-do list completed each day</p></div>
+    <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>Momentum</span><h1>Consistency Checker</h1><p>See how consistently you finish tasks and stick to the times you planned</p></div>
 
     <button type="button" class="consistency-cover" onclick="toggleConsistencyDetails()" aria-controls="consistency-details" aria-expanded="false" id="consistency-cover">
       <div class="consistency-cover-copy">
@@ -1916,6 +1948,17 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
 
     <div class="consistency-fold-content" id="consistency-details">
       <div class="analytics-mets" id="consistency-metrics" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:16px"></div>
+
+      <div class="cc" style="margin-bottom:16px">
+        <div class="analytics-hdr">
+          <div>
+            <h3 style="margin:0;font-size:14px;font-weight:700;color:var(--t1)">Timing of Tasks</h3>
+            <p style="margin:4px 0 0;font-size:12px;color:var(--t2)">Your on-time score uses the outcomes you tick in the Day Planner. “Did it” means completed, but outside the planned time.</p>
+          </div>
+        </div>
+        <div class="consistency-timing-grid" id="consistency-timing-metrics"></div>
+        <div class="consistency-timing-list" id="consistency-timing-list"></div>
+      </div>
 
       <div class="cc" style="margin-bottom:16px">
         <div class="analytics-hdr">
@@ -5252,6 +5295,7 @@ function _todoLegacyId(dateKey, t, idx) {
 function _todoNormalize(dateKey, t, idx) {
   if (!t) return t;
   if (!t.id) t.id = _todoLegacyId(dateKey, t, idx);
+  if (t.timingStatus && !['on_time','done','missed'].includes(t.timingStatus)) t.timingStatus = '';
   if (t.done) t.progress = 100;
   else t.progress = Math.min(100, Math.max(0, parseInt(t.progress) || 0));
   if (t.progress >= 100) t.done = true;
@@ -5449,9 +5493,9 @@ function renderTodo() {
         const orig = todos.indexOf(t);
         let timeStr = '';
         if (t.startTime || t.endTime) {
-          timeStr = [t.startTime, t.endTime].filter(Boolean).join(' → ');
+          timeStr = 'Scheduled ' + [t.startTime, t.endTime].filter(Boolean).join(' - ');
         } else if (t.due) {
-          timeStr = fmtDate(t.due);
+          timeStr = 'Due ' + fmtDate(t.due);
         }
         const pct = t.progress !== null && t.progress !== undefined ? t.progress : 0;
         const col = todoProgColor(pct);
@@ -5461,7 +5505,7 @@ function renderTodo() {
               ${t.done?'<svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}
             </button>
             <div class="tt${t.done?' done':''}">${escHtml(t.text)}</div>
-            ${timeStr ? `<div class="ttime">${timeStr}</div>` : ''}
+            ${timeStr ? `<div class="ttime" title="${escHtml(timeStr)}"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>${escHtml(timeStr)}</span></div>` : ''}
             <div class="tp ${t.priority||'m'}">${{h:'High',m:'Med',l:'Low'}[t.priority]||'Med'}</div>
             <button class="lock-btn${t.locked?' on':''}" title="${t.locked?'Unlock daily task':'Keep this task every day'}" onclick="toggleTodoLock(${orig})">${_lockIcon(!!t.locked)}</button>
             <button class="db" onclick="deleteTodo(${orig})">✕</button>
@@ -5509,6 +5553,8 @@ function toggleTodo(i) {
       const completing = _todoEffectiveProgress(bucket[i]) < 100;
       bucket[i].done = completing;
       bucket[i].progress = completing ? 100 : 0;
+      bucket[i].timingStatus = '';
+      delete bucket[i].timingRecordedAt;
       bucket[i].updatedAt = _nowIso();
     }
   });
@@ -5553,6 +5599,10 @@ function updateTodoProgress(orig, val) {
     if (bucket[orig]) {
       bucket[orig].progress = pct;
       bucket[orig].done = pct >= 100;
+      if ((pct < 100 && ['on_time','done'].includes(bucket[orig].timingStatus)) || (pct >= 100 && bucket[orig].timingStatus === 'missed')) {
+        bucket[orig].timingStatus = '';
+        delete bucket[orig].timingRecordedAt;
+      }
       bucket[orig].updatedAt = _nowIso();
     }
   });
@@ -5859,6 +5909,8 @@ function schedulePlannerTodo(id, startTime, endTime, dateKey = _selectedTodoDate
     if (!task || _todoEffectiveProgress(task) >= 100) return;
     task.startTime = startTime;
     task.endTime = endTime;
+    task.timingStatus = '';
+    delete task.timingRecordedAt;
     task.updatedAt = _nowIso();
     if (task.locked && task.templateId) {
       const template = (d.lockedTodoTemplates || []).find(item => item.id === task.templateId);
@@ -5880,6 +5932,8 @@ function unschedulePlannerTodo(id) {
     if (!task) return;
     task.startTime = '';
     task.endTime = '';
+    task.timingStatus = '';
+    delete task.timingRecordedAt;
     task.updatedAt = _nowIso();
   });
   renderPlanner();
@@ -5898,6 +5952,46 @@ function plannerToggleTodo(id) {
   renderPlanner();
 }
 
+const _PLANNER_OUTCOMES = [
+  { value:'on_time', short:'On time', label:'Did it on time' },
+  { value:'done', short:'Did it', label:'Did it, but not on time' },
+  { value:'missed', short:"Didn't", label:'Did not do it' },
+];
+
+function _plannerOutcomeButtons(kind, id, selected) {
+  return `<span class="planner-outcomes" aria-label="Task outcome">${_PLANNER_OUTCOMES.map(outcome => {
+    const active = selected === outcome.value;
+    return `<button type="button" class="planner-outcome ${outcome.value}${active?' selected':''}" role="checkbox" aria-checked="${active}" title="${outcome.label}" onclick="event.stopPropagation();setPlannerOutcome('${kind}','${id}','${outcome.value}')"><span class="planner-outcome-box">${active?'✓':''}</span><span>${outcome.short}</span></button>`;
+  }).join('')}</span>`;
+}
+
+function setPlannerOutcome(kind, id, status) {
+  if (!_PLANNER_OUTCOMES.some(outcome => outcome.value === status)) return;
+  const dateKey = _selectedTodoDate(DB.get());
+  let nextStatus = '';
+  DB.update(d => {
+    const item = kind === 'todo'
+      ? _getTodoDateBucket(d, dateKey).find(task => task.id === id)
+      : _ensurePlannerEventBucket(d, dateKey).find(event => event.id === id);
+    if (!item) return;
+    nextStatus = item.timingStatus === status ? '' : status;
+    item.timingStatus = nextStatus;
+    if (nextStatus) item.timingRecordedAt = _nowIso();
+    else delete item.timingRecordedAt;
+    if (kind === 'todo' && nextStatus) {
+      const completed = nextStatus === 'on_time' || nextStatus === 'done';
+      item.done = completed;
+      item.progress = completed ? 100 : 0;
+    }
+    item.updatedAt = _nowIso();
+  });
+  if (nextStatus) {
+    const message = { on_time:'Marked as done on time', done:'Marked as done outside the planned time', missed:'Marked as not done' }[nextStatus];
+    toast(message, nextStatus === 'missed' ? '' : 'ok');
+  }
+  renderPlanner();
+}
+
 function _plannerEventHtml(event, kind) {
   const isTodo = kind === 'todo';
   const done = isTodo && _todoEffectiveProgress(event) >= 100;
@@ -5905,9 +5999,8 @@ function _plannerEventHtml(event, kind) {
   const position = _plannerEventPosition(event);
   if (!position) return '';
   return `<div class="planner-event planner-event-positioned${isTodo?'':' private'}${done?' done':''}" style="top:${position.top}px;height:${position.height}px" onclick="event.stopPropagation()">
-    ${isTodo ? `<button class="tc${done?' on':''}" title="${done?'Mark unfinished':'Complete task'}" onclick="event.stopPropagation();plannerToggleTodo('${event.id}')">${done?'<svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</button>` : ''}
     <span class="planner-event-time">${escHtml(time)}</span>
-    <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span><span class="planner-event-kind">${event.locked?'Locked daily · ':''}${isTodo?'To-do item':'Planner only'}</span></span>
+    <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span>${_plannerOutcomeButtons(kind,event.id,event.timingStatus)}</span>
     <button class="lock-btn${event.locked?' on':''}" title="${event.locked?'Unlock daily item':'Keep this item every day'}" onclick="event.stopPropagation();togglePlannerItemLock('${kind}','${event.id}')">${_lockIcon(!!event.locked)}</button>
     <button class="db" title="${isTodo?'Remove from timeline':'Delete event'}" onclick="event.stopPropagation();${isTodo?`unschedulePlannerTodo('${event.id}')`:`deletePlannerEvent('${event.id}')`}">✕</button>
   </div>`;
@@ -5991,7 +6084,7 @@ function logDay() {
     const entry = {
       id: _uid(),
       date: dateKey,
-      tasks: todos.map(t => ({ text:t.text, done:_todoEffectiveProgress(t)>=100, priority:t.priority||'m', progress:_todoEffectiveProgress(t), startTime:t.startTime, endTime:t.endTime })),
+      tasks: todos.map(t => ({ text:t.text, done:_todoEffectiveProgress(t)>=100, priority:t.priority||'m', progress:_todoEffectiveProgress(t), startTime:t.startTime, endTime:t.endTime, timingStatus:t.timingStatus||'', timingRecordedAt:t.timingRecordedAt||'' })),
       completedCount, skippedCount, completionPct
     };
     DB.update(d => {
@@ -6411,6 +6504,8 @@ function consistencyToggleTask(kind, date, ref, taskIndex) {
     const completing = _todoEffectiveProgress(located.task) < 100;
     located.task.done = completing;
     located.task.progress = completing ? 100 : 0;
+    located.task.timingStatus = '';
+    delete located.task.timingRecordedAt;
     located.task.updatedAt = _nowIso();
     if (located.entry) _refreshTodoHistoryEntry(located.entry);
   });
@@ -6425,6 +6520,10 @@ function consistencyUpdateTaskProgress(kind, date, ref, taskIndex, value) {
     if (!located) return;
     located.task.progress = progress;
     located.task.done = progress >= 100;
+    if ((progress < 100 && ['on_time','done'].includes(located.task.timingStatus)) || (progress >= 100 && located.task.timingStatus === 'missed')) {
+      located.task.timingStatus = '';
+      delete located.task.timingRecordedAt;
+    }
     located.task.updatedAt = _nowIso();
     if (located.entry) _refreshTodoHistoryEntry(located.entry);
   });
@@ -6454,6 +6553,44 @@ function consistencyDeleteTask(kind, date, ref, taskIndex) {
   });
 }
 
+function _consistencyTimingSummary(d, range) {
+  const cutoff = range === 'all' ? null : _consistencyDateKeyOffset((range === '7' ? 7 : 30) - 1);
+  const latest = today();
+  const included = date => date && date <= latest && (!cutoff || date >= cutoff);
+  const validStatuses = ['on_time','done','missed'];
+  const items = [];
+  const addItem = (date, item, source) => {
+    if (!included(date) || !item?.startTime) return;
+    items.push({
+      date,
+      text:item.text || 'Untitled task',
+      startTime:item.startTime,
+      endTime:item.endTime || '',
+      status:validStatuses.includes(item.timingStatus) ? item.timingStatus : '',
+      source,
+    });
+  };
+
+  (d.todoHistory || []).forEach(day => (day?.tasks || []).forEach(task => addItem(day.date, task, 'Logged to-do')));
+  Object.entries(d.todosByDate || {}).forEach(([date, tasks]) => (tasks || []).forEach(task => addItem(date, task, 'To-do')));
+  Object.entries(d.plannerEventsByDate || {}).forEach(([date, events]) => (events || []).forEach(event => addItem(date, event, 'Planner event')));
+
+  items.sort((a,b) => b.date.localeCompare(a.date) || (b.startTime || '').localeCompare(a.startTime || ''));
+  const evaluated = items.filter(item => item.status);
+  const onTime = evaluated.filter(item => item.status === 'on_time').length;
+  const done = evaluated.filter(item => item.status === 'done').length;
+  const missed = evaluated.filter(item => item.status === 'missed').length;
+  return {
+    items,
+    evaluated,
+    onTime,
+    done,
+    missed,
+    pending:items.length - evaluated.length,
+    score:evaluated.length ? Math.round(onTime / evaluated.length * 100) : null,
+  };
+}
+
 function renderConsistency() {
   DB.update(d => {
     _todoHistoryMigrate(d);
@@ -6478,6 +6615,7 @@ function renderConsistency() {
   const perfectDays = trackedDays.filter(day => _consistencyPct(day) === 100).length;
   const rangeLabel = _consistencyRange === '7' ? '7-Day' : _consistencyRange === '30' ? '30-Day' : 'All-Time';
   const unfinishedTasks = _consistencyUnfinishedTasks(d, _consistencyRange);
+  const timing = _consistencyTimingSummary(d, _consistencyRange);
 
   const details = document.getElementById('consistency-details');
   const unfinishedContent = document.getElementById('consistency-unfinished-content');
@@ -6509,6 +6647,30 @@ function renderConsistency() {
     <div class="amet"><div class="amet-v">${streak}</div><div class="amet-l">Current 80%+ Streak</div></div>
     <div class="amet"><div class="amet-v">${perfectDays}</div><div class="amet-l">Perfect Days</div></div>
     <div class="amet"><div class="amet-v">${trackedDays.length}</div><div class="amet-l">Days With Tasks</div></div>`;
+
+  document.getElementById('consistency-timing-metrics').innerHTML = `
+    <div class="consistency-timing-stat"><div class="consistency-timing-value" style="color:${_consistencyColor(timing.score)}">${timing.score==null?'—':timing.score+'%'}</div><div class="consistency-timing-label">On-Time Score</div></div>
+    <div class="consistency-timing-stat"><div class="consistency-timing-value" style="color:#34d399">${timing.onTime}</div><div class="consistency-timing-label">Did It On Time</div></div>
+    <div class="consistency-timing-stat"><div class="consistency-timing-value" style="color:#fbbf24">${timing.done}</div><div class="consistency-timing-label">Did It</div></div>
+    <div class="consistency-timing-stat"><div class="consistency-timing-value" style="color:#f87171">${timing.missed}</div><div class="consistency-timing-label">Did Not Do It</div></div>
+    <div class="consistency-timing-stat"><div class="consistency-timing-value">${timing.pending}</div><div class="consistency-timing-label">Needs A Rating</div></div>`;
+
+  const timingStatus = {
+    on_time:{ label:'On time', className:'on_time' },
+    done:{ label:'Did it', className:'done' },
+    missed:{ label:"Didn't do it", className:'missed' },
+    '':{ label:'Not rated', className:'pending' },
+  };
+  const timingList = document.getElementById('consistency-timing-list');
+  timingList.innerHTML = timing.items.length ? timing.items.slice(0,12).map(item => {
+    const outcome = timingStatus[item.status] || timingStatus[''];
+    const time = [item.startTime,item.endTime].filter(Boolean).join('–');
+    return `<div class="consistency-timing-row">
+      <div class="consistency-timing-task" title="${escHtml(item.text)}">${escHtml(item.text)}</div>
+      <div class="consistency-timing-meta">${fmtDate(item.date)} · ${escHtml(time)} · ${item.source}</div>
+      <div class="consistency-timing-status ${outcome.className}">${outcome.label}</div>
+    </div>`;
+  }).join('') : '<div class="empty">Schedule tasks in the Day Planner, then tick an outcome to start measuring whether you are sticking to your times.</div>';
 
   const chartDays = days.length > 90 ? days.slice(-90) : days;
   const base = chartDefaults();
