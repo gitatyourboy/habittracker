@@ -1102,9 +1102,11 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
   <button class="nbtn active" data-page="dashboard" onclick="showPage('dashboard')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
   </button>
+  <!-- Retired feature navigation retained for easy restoration.
   <button class="nbtn" data-page="sleep" onclick="showPage('sleep')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Sleep
   </button>
+  -->
   <!-- Retired feature navigation retained for easy restoration.
   <button class="nbtn" data-page="weight" onclick="showPage('weight')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Weight
@@ -1129,9 +1131,11 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
   <button class="nbtn" data-page="notes" onclick="showPage('notes')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Notes
   </button>
+  <!-- Retired feature navigation retained for easy restoration.
   <button class="nbtn" data-page="calories" onclick="showPage('calories')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 2v2.5"/><path d="M14 2v2.5"/><path d="M10 5.172C10 3.78 10.8 2 12 2s2 1.78 2 3.172v.001M3 14h18l-1.5 6.5a1 1 0 0 1-1 .5H5.5a1 1 0 0 1-1-.5z"/><path d="M3 14v-1a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v1"/></svg>Calories
   </button>
+  -->
 </nav>
 
 <!-- ═══ DASHBOARD ═══ -->
@@ -1153,7 +1157,7 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
         </div>
       </div>
       <h1 class="hero-title">Own your progress.</h1>
-      <p class="hero-sub">Your habits, sleep, goals, tasks and notes in one focused personal command center.</p>
+      <p class="hero-sub">Your habits, goals, tasks and notes in one focused personal command center.</p>
       <button class="hero-cta">
         <div class="wg"><span></span><span></span><span></span><span></span></div>
         Live overview
@@ -1166,7 +1170,9 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
       <div class="card" id="ai-card"></div>
     </div>
     <div class="dcol" id="dcol-mid">
+      <!-- Retired feature card retained for easy restoration.
       <div class="card" id="quick-sleep-card"></div>
+      -->
       <!-- Retired feature card retained for easy restoration.
       <div class="card" id="quick-weight-card"></div>
       -->
@@ -1180,8 +1186,9 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
   </div>
 </div>
 
+<!-- Retired sleep feature retained in source and hidden from the app. -->
 <!-- ═══ SLEEP PAGE ═══ -->
-<div id="page-sleep" class="page">
+<div id="page-sleep" class="page" hidden>
   <div class="sp">
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Rest</span><h1>Sleep</h1><p>Track your sleep to build better rest habits</p></div>
     <div class="sr" id="sleep-stats"></div>
@@ -1641,8 +1648,9 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
   </div>
 </div>
 
+<!-- Retired calorie feature retained in source and hidden from the app. -->
 <!-- ═══ CALORIES PAGE ═══ -->
-<div id="page-calories" class="page">
+<div id="page-calories" class="page" hidden>
   <div class="sp">
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 14h18l-1.5 6.5a1 1 0 0 1-1 .5H5.5a1 1 0 0 1-1-.5z"/><path d="M3 14v-1a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v1"/></svg>Nutrition</span><h1>Calorie Tracker</h1><p>Track meals and macros against your daily targets</p></div>
 
@@ -2272,19 +2280,19 @@ function generateAISummary(data) {
   const week = new Date(); week.setDate(week.getDate()-7);
   const twoW = new Date(); twoW.setDate(twoW.getDate()-14);
 
-  // Sleep
-  const rs = data.sleep.filter(s=>new Date(s.date)>=week);
-  const ps = data.sleep.filter(s=>new Date(s.date)>=twoW&&new Date(s.date)<week);
-  if (rs.length>=2) {
-    const avg = rs.reduce((a,b)=>a+b.hours,0)/rs.length;
-    if (ps.length>=2) {
-      const pavg = ps.reduce((a,b)=>a+b.hours,0)/ps.length;
-      const chg = Math.round((avg-pavg)/pavg*100);
-      if (Math.abs(chg)>5) insights.push(`Sleep ${chg>0?'up':'down'} ${Math.abs(chg)}% vs last week (avg ${avg.toFixed(1)}h/night).`);
-    } else {
-      insights.push(`Averaging ${(rs.reduce((a,b)=>a+b.hours,0)/rs.length).toFixed(1)} hours of sleep this week.`);
-    }
-  }
+  // Retired sleep insight retained for easy restoration.
+  // const rs = data.sleep.filter(s=>new Date(s.date)>=week);
+  // const ps = data.sleep.filter(s=>new Date(s.date)>=twoW&&new Date(s.date)<week);
+  // if (rs.length>=2) {
+  //   const avg = rs.reduce((a,b)=>a+b.hours,0)/rs.length;
+  //   if (ps.length>=2) {
+  //     const pavg = ps.reduce((a,b)=>a+b.hours,0)/ps.length;
+  //     const chg = Math.round((avg-pavg)/pavg*100);
+  //     if (Math.abs(chg)>5) insights.push(`Sleep ${chg>0?'up':'down'} ${Math.abs(chg)}% vs last week (avg ${avg.toFixed(1)}h/night).`);
+  //   } else {
+  //     insights.push(`Averaging ${(rs.reduce((a,b)=>a+b.hours,0)/rs.length).toFixed(1)} hours of sleep this week.`);
+  //   }
+  // }
 
   // Retired weight insight retained for easy restoration.
   // const rw = data.weight.filter(w=>new Date(w.date)>=week).sort((a,b)=>a.date.localeCompare(b.date));
@@ -2312,7 +2320,7 @@ function generateAISummary(data) {
   if (done>0) insights.push(`${done} goal${done!==1?'s':''} completed. Time to set the next challenge.`);
 
   if (!insights.length) {
-    insights.push('Start logging your sleep, goals, and tasks to see personalized insights here.');
+    insights.push('Start logging your goals and tasks to see personalized insights here.');
     insights.push('Use the Dashboard and tracker pages to build a daily tracking habit.');
   }
   return insights;
@@ -2321,7 +2329,7 @@ function generateAISummary(data) {
 /* ═══════════════════════════════════════
    PAGE ROUTING
 ═══════════════════════════════════════ */
-const RETIRED_PAGES = new Set(['weight', 'financial', 'gym']);
+const RETIRED_PAGES = new Set(['sleep', 'weight', 'financial', 'gym', 'calories']);
 
 function showPage(name) {
   if (RETIRED_PAGES.has(name)) name = 'dashboard';
@@ -2332,15 +2340,15 @@ function showPage(name) {
   window.scrollTo(0,0);
 
   const renderers = {
-    sleep: renderSleep,
     goals: renderGoals,
     todo: renderTodo,
     notes: renderNotes,
-    calories: renderCalories,
     /* Retired feature renderers retained for easy restoration:
+    sleep: renderSleep,
     weight: renderWeight,
     financial: renderFinancial,
     gym: renderGym,
+    calories: renderCalories,
     */
   };
   if (renderers[name]) renderers[name]();
@@ -2351,8 +2359,8 @@ function showPage(name) {
 ═══════════════════════════════════════ */
 function renderDashboard() {
   renderPriorities();
-  renderQuickSleepCard();
   // Retired feature cards retained for easy restoration:
+  // renderQuickSleepCard();
   // renderQuickWeightCard();
   // renderQuickFinancialCard();
   renderLifeSummaryCard();
@@ -2545,9 +2553,9 @@ function addQuickSpendFromDashboard(type) {
 /* LIFE SUMMARY CARD — replaces the old analytics cards with one glanceable line */
 function renderLifeSummaryCard() {
   const d = DB.get();
-  const sleepLogs = Array.isArray(d.sleep) ? [...d.sleep].sort((a,b)=>b.date.localeCompare(a.date)) : [];
-  const lastSleep = sleepLogs[0];
   // Retired feature summary values retained for easy restoration:
+  // const sleepLogs = Array.isArray(d.sleep) ? [...d.sleep].sort((a,b)=>b.date.localeCompare(a.date)) : [];
+  // const lastSleep = sleepLogs[0];
   // const weightLogs = Array.isArray(d.weight) ? [...d.weight].sort((a,b)=>b.date.localeCompare(a.date)) : [];
   // const currentWeight = weightLogs[0];
   // const key = _selectedMonthKey(d);
@@ -2555,12 +2563,14 @@ function renderLifeSummaryCard() {
   const t = today();
   const doneCount = d.priorities.completed.filter(c=>c.date===t).length;
   const totalCount = d.priorities.items.length;
+  const activeGoals = d.goals.filter(g=>g.progress<100).length;
 
   const parts = [
-    lastSleep ? `${lastSleep.hours} hours slept` : 'No sleep logged',
+    // lastSleep ? `${lastSleep.hours} hours slept` : 'No sleep logged',
     // currentWeight ? `${currentWeight.weight}kg` : 'No weight logged',
     // `£${balance.toFixed(2)} available`,
-    `${doneCount}/${totalCount} priorities completed`
+    `${doneCount}/${totalCount} priorities completed`,
+    `${activeGoals} active goal${activeGoals===1?'':'s'}`
   ];
 
   document.getElementById('life-summary-card').innerHTML = `
@@ -5923,15 +5933,15 @@ function _renderActivePageAfterCloudUpdate() {
   const name = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
   if (name === 'dashboard') return renderDashboard();
   const renderers = {
-    sleep:renderSleep,
     goals:renderGoals,
     todo:renderTodo,
     notes:renderNotes,
-    calories:renderCalories,
     /* Retired feature renderers retained for easy restoration:
+    sleep:renderSleep,
     weight:renderWeight,
     financial:renderFinancial,
     gym:renderGym,
+    calories:renderCalories,
     */
   };
   if (renderers[name]) renderers[name]();
