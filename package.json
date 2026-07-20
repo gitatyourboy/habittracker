@@ -1,0 +1,17 @@
+{
+  "name": "personal-task-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "convex:dev": "convex dev",
+    "convex:check": "convex dev --once"
+  },
+  "dependencies": {
+    "convex": "^1.42.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}

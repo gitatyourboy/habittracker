@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>#1 HabitTracker</title>
+<title>HabitTracker — Personal command center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/convex@1.42.1/dist/browser.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 
@@ -20,9 +20,9 @@
   --fill:rgba(255,255,255,.05); --fill-2:rgba(255,255,255,.07);
   /* TEXT TIERS */
   --t1:#f4f4f5; --t2:rgba(244,244,245,.64); --t3:rgba(244,244,245,.40); --white:#fff;
-  /* ONE ACCENT (electric azure) */
-  --accent:#4f83ff; --accent-rgb:79,131,255; --accent-2:#8fb0ff; --accent-ink:#3a68e0;
-  --glow:rgba(79,131,255,.30);
+  /* ONE ACCENT (violet) */
+  --accent:#7c3aed; --accent-rgb:124,58,237; --accent-2:#a78bfa; --accent-ink:#6d28d9;
+  --glow:rgba(124,58,237,.30);
   /* SEMANTIC */
   --success:#34d399; --success-rgb:52,211,153; --success-2:#6ee7b7; --success-3:#059669;
   --warn:#f87171; --warn-rgb:248,113,113; --warn-2:#fca5a5; --warn-3:#dc2626; --warn-soft:rgba(248,113,113,.12);
@@ -88,8 +88,8 @@ nav::-webkit-scrollbar{height:0}
 .dgrid{max-width:940px;margin:0 auto;padding:18px 14px 80px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
 @media(max-width:620px){.dgrid{grid-template-columns:1fr}}
 
-/* DASHBOARD — 3-column layout (Left: Today's Top 3 / Middle: Quick Sleep+Weight / Right: Quick Financial+Life Summary) */
-.dgrid3{max-width:1120px;margin:0 auto;padding:18px 14px 80px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:start}
+/* DASHBOARD — 2-column layout (priorities/summary + sleep/life overview) */
+.dgrid3{max-width:960px;margin:0 auto;padding:18px 14px 80px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
 .dcol{display:flex;flex-direction:column;gap:14px}
 @media(max-width:900px){.dgrid3{grid-template-columns:1fr 1fr}}
 @media(max-width:620px){.dgrid3{grid-template-columns:1fr;padding:14px 10px 90px}}
@@ -663,6 +663,13 @@ nav::-webkit-scrollbar{height:0}
 .profile-card:hover{border-color:rgba(var(--accent-rgb),.7);background:rgba(var(--accent-rgb),.14);transform:translateY(-4px);box-shadow:0 16px 48px rgba(var(--accent-rgb),.32)}
 .profile-av{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:var(--white);margin:0 auto 14px}
 .profile-pname{font-size:15px;font-weight:700;color:var(--white)}
+.profile-auth-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:22px}
+.profile-auth-btn{border:1px solid rgba(var(--accent-rgb),.38);background:rgba(var(--accent-rgb),.1);color:var(--t1);border-radius:999px;padding:10px 18px;font:700 13px var(--font-ui);cursor:pointer;transition:var(--tr)}
+.profile-auth-btn:hover{background:rgba(var(--accent-rgb),.2);border-color:rgba(var(--accent-rgb),.65)}
+.cloud-signin-screen{display:flex;flex-direction:column;align-items:center;position:relative;z-index:1;width:min(100%,360px)}
+.cloud-signin-form{width:100%;display:flex;flex-direction:column;gap:12px;margin-top:22px}
+.cloud-signin-form .setup-fi{width:100%;box-sizing:border-box}
+.cloud-signin-hint{font-size:12px;color:var(--t2);text-align:center;line-height:1.5}
 
 /* PIN screen */
 .pin-screen{flex-direction:column;align-items:center;position:relative;z-index:1;width:100%}
@@ -832,6 +839,136 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
 .note-detail-hdr{border-bottom:1px solid var(--border)}
 .note-detail-title{font-family:var(--font-head);letter-spacing:-.02em}
 .bullet-dot{background:var(--accent-2)}
+
+/* ═══════════════════════════════════════════════════════════════
+   CRYPTIX RESKIN
+   Visual language adapted from cryptix-sample.html. Behaviour and
+   tracker data flows remain unchanged.
+═══════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#09070f;
+  --bg2:#100b1c;
+  --surface:#151021;
+  --card-solid:#161021;
+  --card:rgba(20,15,31,.94);
+  --border:rgba(196,169,255,.10);
+  --border-2:rgba(196,169,255,.18);
+  --fill:rgba(255,255,255,.035);
+  --fill-2:rgba(255,255,255,.065);
+  --t1:#f5f6f7;
+  --t2:#9aa0a8;
+  --t3:#6b7178;
+  --accent:#8b5cf6;
+  --accent-rgb:139,92,246;
+  --accent-2:#b69cff;
+  --accent-ink:#7447e8;
+  --glow:rgba(139,92,246,.28);
+  --success:#35e4a4;
+  --success-rgb:53,228,164;
+  --success-2:#2bd396;
+  --success-3:#35e4a4;
+  --warn:#ff5c6c;
+  --warn-rgb:255,92,108;
+  --warn-2:#ff7b88;
+  --warn-3:#e64d5d;
+  --r:20px;
+  --r-lg:20px;
+  --font-ui:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-head:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-serif:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+
+body{background:var(--bg);color:var(--t2);line-height:1.6;letter-spacing:0}
+h1,h2,h3,h4,.hero-title,.sph h1,.fin-shead,.modal h2,.setup-s-title,.auth-logo,.nav-logo{font-family:var(--font-head);color:var(--t1);letter-spacing:-.025em}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#303438;border-radius:99px}
+
+/* Navigation */
+nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(22px) saturate(1.2);gap:4px}
+.nav-logo{font-size:17px;gap:10px;margin-right:18px}
+.nav-logo svg,.auth-logo svg{display:none}
+.nav-logo::before,.auth-logo::before{content:'';display:inline-block;width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--accent-2),var(--accent-ink));box-shadow:0 0 28px -8px var(--accent);flex:0 0 auto}
+.nbtn{padding:8px 12px;border-radius:999px;color:var(--t2);font-size:12.5px}
+.nbtn:hover{color:var(--t1);background:var(--fill-2)}
+.nbtn.active{color:#fff;background:var(--accent)}
+.nbtn.active svg{color:#fff}
+.nav-profile-badge{height:64px;padding:0 18px;background:linear-gradient(90deg,transparent 0%,rgba(10,10,11,.96) 24%)}
+.nav-logout-btn{padding:6px 12px;border-radius:999px;border-color:var(--border-2)}
+.page{padding-top:64px}
+
+/* Dashboard hero */
+.hero{min-height:360px;padding:68px 20px 68px;background:radial-gradient(70% 100% at 50% 0%,rgba(var(--accent-rgb),.23),transparent 66%),linear-gradient(180deg,var(--bg) 0%,#160c29 62%,var(--bg) 100%);border-bottom:1px solid var(--border)}
+.hero::before{display:none}
+.hero-moon{display:none}
+.hero-mtn{display:block;height:43%;opacity:.82}
+.hero-mtn .hm1{fill:#2b1748}
+.hero-mtn .hm2{fill:#1c1131}
+.hero-mtn .hm3{fill:#0d0915}
+.hero-content{max-width:850px;margin:0 auto}
+.hero-top{justify-content:center;width:auto;margin-bottom:22px}
+.hbubble{width:auto;height:auto;min-height:0;padding:7px 13px;border-radius:999px;flex-direction:row;gap:7px;background:rgba(var(--accent-rgb),.07);border:1px solid rgba(var(--accent-rgb),.28);box-shadow:none;animation:none}
+.hbubble:hover{transform:translateY(-1px);background:rgba(var(--accent-rgb),.11);box-shadow:none}
+.hbubble svg{width:15px;height:15px;color:var(--accent)}
+.hbubble span{font-size:10px;line-height:1;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+.hbubble span br{display:none}
+.hero-title{font-family:var(--font-head);font-size:clamp(42px,7vw,70px);font-weight:700;line-height:1.03;letter-spacing:-.055em;text-shadow:none}
+.hero-sub{max-width:560px;margin:17px auto 25px;color:var(--t2);font-size:15px;line-height:1.65}
+.hero-cta,.sbtn,.ci-btn,.pmsv,.setup-continue-btn{border-radius:999px;background:var(--accent);color:#fff;box-shadow:0 12px 34px -18px var(--accent);font-weight:700}
+.hero-cta{padding:12px 22px;margin-bottom:0}
+.hero-cta:hover,.sbtn:hover,.ci-btn:hover,.setup-continue-btn:hover{background:var(--accent-ink);color:#fff;transform:translateY(-1px)}
+.wg span{background:#fff}
+
+/* Content and cards */
+.dgrid,.dgrid3,.sp{max-width:1180px}
+.dgrid3{gap:18px;padding:26px 20px 90px}
+.dcol{gap:18px}
+.card,.cc,.fc,.tbl,.tw,.fin-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:none;backdrop-filter:none}
+.card{padding:22px}
+.card:hover,.cc:hover,.fc:hover,.fin-card:hover{border-color:var(--border-2);box-shadow:none}
+.ctitle{font-size:15px;font-weight:600}
+.ctitle svg,.va,.ev,.sd,.gpc,.prw,.gym-st,.gym-sess-stat{color:var(--accent)}
+.qcard-summary,.life-summary-text,.nwc{background:rgba(var(--accent-rgb),.055);border-color:rgba(var(--accent-rgb),.18)!important}
+.ci-m,.ci-ir,.jw,.pitem,.wo,.gym-ex-card,.gym-ac,.cal-macro-card,.cal-meal-card,.cal-log-card,.cal-chart-card{background:var(--fill);border-color:var(--border)}
+.ci-m:hover,.ci-m.rated,.pitem:hover,.cal-meal-card:hover{background:rgba(var(--accent-rgb),.06);border-color:rgba(var(--accent-rgb),.3)}
+.ep-btn,.ai-btn,.gym-log-btn{border-radius:999px;background:rgba(var(--accent-rgb),.08);border-color:rgba(var(--accent-rgb),.24);color:var(--accent)}
+.pnum,.pchk.on,.dot.on,.fin-month-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.bf,.gpf{background:var(--accent)}
+
+/* Pages, forms, tables, and dialogs */
+.sph h1{font-weight:700;letter-spacing:-.04em}
+.eyebrow{color:var(--accent);letter-spacing:.12em}
+.fi,.setup-fi,.note-title-edit-inp{background:var(--fill);border-color:var(--border-2);border-radius:12px;color:var(--t1)}
+.fi:focus,.setup-fi:focus,.note-title-edit-inp:focus{border-color:rgba(var(--accent-rgb),.62);background:rgba(var(--accent-rgb),.035)}
+.tbl th,.ql-hdr,.sleep-log-head{background:var(--fill-2)}
+.tbl td,.ql-row,.sleep-log-row,.note-card,.ti{border-color:var(--border)}
+.modal,.rmi,.pmi,.confirm-box{background:var(--surface);border:1px solid var(--border-2);border-radius:20px;box-shadow:0 28px 80px rgba(0,0,0,.5)}
+.overlay,.rmod,.pmod,.confirm-overlay{background:rgba(0,0,0,.78);backdrop-filter:blur(10px)}
+.notes-sync,.fin-month-chip,.ft,.note-back-btn,.confirm-cancel{border-radius:999px}
+.note-card{background:var(--card);border-radius:16px}
+.note-card:hover{background:var(--card);border-color:var(--border-2);box-shadow:none}
+.bullet-dot{background:var(--accent)}
+
+/* Login and profiles */
+.auth-overlay{background:radial-gradient(65% 55% at 50% 10%,rgba(var(--accent-rgb),.11),transparent 70%),var(--bg)}
+.auth-overlay::before{display:none}
+.auth-logo{gap:10px}
+.auth-tagline{color:var(--t2)}
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;backdrop-filter:none}
+.profile-card:hover{background:var(--bg-elev-2,#17181b);border-color:var(--border-2);transform:translateY(-3px);box-shadow:0 22px 50px -30px var(--accent)}
+.pin-btn{background:var(--surface);border-color:var(--border);color:var(--t1)}
+.pin-btn:hover{background:var(--fill-2);border-color:var(--border-2)}
+.pin-dot{border-color:rgba(var(--accent-rgb),.45)}
+.pin-dot.filled,.ssi-dot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px var(--glow)}
+.auth-spinner{border-color:rgba(var(--accent-rgb),.18);border-top-color:var(--accent)}
+
+@media(max-width:768px){
+  nav{height:58px;padding:0 10px}
+  .nav-logo{margin-right:8px}
+  .nav-profile-badge{top:58px;min-height:42px;background:rgba(10,10,11,.97)}
+  .page{padding-top:106px}
+  .hero{padding:52px 16px 38px;min-height:300px}
+  .dgrid3{padding:18px 12px 90px;gap:14px}
+  .card{padding:18px}
+}
 </style>
 </head>
 <body>
@@ -850,6 +987,25 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
     <div class="auth-logo"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>HabitTracker</div>
     <div class="auth-tagline" id="profile-tagline">Who's tracking today?</div>
     <div class="profile-grid" id="profile-grid"></div>
+    <div class="profile-auth-actions">
+      <button class="profile-auth-btn" type="button" onclick="showCloudSignIn()">Sign in to existing profile</button>
+    </div>
+  </div>
+
+  <!-- Existing cloud profile sign-in (used by new devices) -->
+  <div id="cloud-signin-screen" class="cloud-signin-screen" style="display:none">
+    <button class="pin-back" type="button" onclick="backToProfiles()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+    </button>
+    <div class="auth-logo"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>HabitTracker</div>
+    <div class="setup-s-title">Sign in to your profile</div>
+    <div class="cloud-signin-hint">Use the same profile name and 4-digit PIN as your other device.</div>
+    <form class="cloud-signin-form" onsubmit="signInExistingProfile(event)">
+      <input class="setup-fi" id="cloud-signin-name" type="text" placeholder="Profile name" maxlength="80" autocomplete="username" autocapitalize="words">
+      <input class="setup-fi" id="cloud-signin-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="4-digit PIN" autocomplete="current-password">
+      <div class="setup-err" id="cloud-signin-err"></div>
+      <button class="setup-continue-btn" id="cloud-signin-btn" type="submit">Sign in &amp; sync</button>
+    </form>
   </div>
 
   <!-- Profile setup (create new profile) -->
@@ -949,18 +1105,24 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
   <button class="nbtn" data-page="sleep" onclick="showPage('sleep')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Sleep
   </button>
+  <!-- Retired feature navigation retained for easy restoration.
   <button class="nbtn" data-page="weight" onclick="showPage('weight')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Weight
   </button>
+  -->
   <button class="nbtn" data-page="goals" onclick="showPage('goals')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>General Goals
   </button>
+  <!-- Retired feature navigation retained for easy restoration.
   <button class="nbtn" data-page="financial" onclick="showPage('financial')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Financial Log
   </button>
+  -->
+  <!-- Retired feature navigation retained for easy restoration.
   <button class="nbtn" data-page="gym" onclick="showPage('gym')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Gym Progress
   </button>
+  -->
   <button class="nbtn" data-page="todo" onclick="showPage('todo')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>To-Do List
   </button>
@@ -990,11 +1152,11 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
           <span>AI<br>Summary</span>
         </div>
       </div>
-      <h1 class="hero-title">#1 HabitTracker</h1>
-      <p class="hero-sub">Track everything. Build consistency.<br>Become unstoppable.</p>
+      <h1 class="hero-title">Own your progress.</h1>
+      <p class="hero-sub">Your habits, sleep, goals, tasks and notes in one focused personal command center.</p>
       <button class="hero-cta">
         <div class="wg"><span></span><span></span><span></span><span></span></div>
-        Get for Windows
+        Live overview
       </button>
     </div>
   </div>
@@ -1005,12 +1167,16 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
     </div>
     <div class="dcol" id="dcol-mid">
       <div class="card" id="quick-sleep-card"></div>
+      <!-- Retired feature card retained for easy restoration.
       <div class="card" id="quick-weight-card"></div>
-    </div>
-    <div class="dcol" id="dcol-right">
-      <div class="card" id="quick-financial-card"></div>
+      -->
       <div class="card" id="life-summary-card"></div>
     </div>
+    <!-- Retired finance column retained for easy restoration.
+    <div class="dcol" id="dcol-right">
+      <div class="card" id="quick-financial-card"></div>
+    </div>
+    -->
   </div>
 </div>
 
@@ -1083,8 +1249,9 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
   </div>
 </div>
 
+<!-- Retired weight feature retained in source and hidden from the app. -->
 <!-- ═══ WEIGHT PAGE ═══ -->
-<div id="page-weight" class="page">
+<div id="page-weight" class="page" hidden>
   <div class="sp">
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Body</span><h1>Weight Progress</h1><p>Monitor your bodyweight trend over time</p></div>
 
@@ -1172,8 +1339,9 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
   </div>
 </div>
 
+<!-- Retired budget/finance feature retained in source and hidden from the app. -->
 <!-- ═══ FINANCIAL PAGE ═══ -->
-<div id="page-financial" class="page">
+<div id="page-financial" class="page" hidden>
   <div class="sp">
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Money</span><h1>Financial Log</h1><p>Your premium monthly finance dashboard</p></div>
 
@@ -1257,7 +1425,8 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
       </div>
     </div>
 
-    <!-- ═ BUDGET ═ -->
+    <!-- Budget categories removed from the interface. Existing saved data is retained. -->
+    <div hidden>
     <div class="fin-card">
       <div class="fin-shead" style="justify-content:space-between">
         <span>Budget</span>
@@ -1277,6 +1446,8 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
         <div class="fg" style="max-width:120px"><label>Item Cost (opt.)</label><input class="fi" type="number" id="bc-item-cost" placeholder="50" step="0.01"></div>
         <button type="button" class="sbtn" onclick="addBudgetCategory()">Add Budget Category</button>
       </div>
+    </div>
+
     </div>
 
     <!-- ═ FINANCIAL ANALYTICS (unified) ═ -->
@@ -1304,8 +1475,9 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
   </div>
 </div>
 
+<!-- Retired gym feature retained in source and hidden from the app. -->
 <!-- ═══ GYM PAGE ═══ -->
-<div id="page-gym" class="page">
+<div id="page-gym" class="page" hidden>
   <div class="sp">
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Training</span><h1>Gym Progress</h1><p>Log workouts and track personal records</p></div>
     <div class="sr" id="gym-stats"></div>
@@ -1631,8 +1803,7 @@ nav{height:56px;background:rgba(11,11,13,.80);border-bottom:1px solid var(--bord
    ▸ Replace the two placeholder strings below with your actual values
    ▸ Get them from: Supabase Dashboard → Project Settings → API
 ═══════════════════════════════════════ */
-const SUPABASE_URL      = 'YOUR_SUPABASE_URL';   // https://xxxx.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';        // eyJh...
+const CONVEX_URL = 'https://determined-marlin-458.convex.cloud';
 
 /* ─── Dynamic profile storage ─── */
 const _GRAD_POOL = [
@@ -1658,6 +1829,21 @@ const escHtml = s => String(s).replace(/[&<>"']/g, c =>
 function _loadProfiles()    { try { return JSON.parse(localStorage.getItem('ht_profiles')||'[]'); } catch { return []; } }
 function _saveProfiles(arr) { localStorage.setItem('ht_profiles', JSON.stringify(arr)); }
 function _findProfile(id)   { return _loadProfiles().find(p => p.id === id) || null; }
+function _saveCloudProfile(profile, pin) {
+  const profiles = _loadProfiles();
+  const saved = {
+    id: profile.profileId,
+    name: profile.profileName,
+    pin,
+    grad: _avatarGrad(profile.profileId),
+    createdAt: Date.now(),
+  };
+  const existingIndex = profiles.findIndex(p => p.id === saved.id);
+  if (existingIndex >= 0) profiles[existingIndex] = { ...profiles[existingIndex], ...saved };
+  else profiles.push(saved);
+  _saveProfiles(profiles);
+  return saved;
+}
 function _createProfile(name, pin) {
   const id   = Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   const grad = _avatarGrad(id);
@@ -1668,11 +1854,61 @@ function _createProfile(name, pin) {
 
 const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-let _sb        = null;  // Supabase client instance
+let _sb        = null;  // retired Supabase compatibility sentinel (always null)
+let _convexClient = null;
+let _convexUnsubscribe = null;
+let _convexRefreshTimer = null;
+let _convexApplyingRemote = false;
+let _lastConvexVersion = -1;
+let _cloudSessionToken = null;
 let _profile   = null;  // active profile id
 let _state     = null;  // in-memory data (source of truth for render functions)
-let _syncTimer = null;  // debounce handle for Supabase writes
+let _syncTimer = null;  // debounce handle for Convex writes
 let _pinBuf    = '';    // current PIN entry buffer
+
+function _cloudTokenKey(profileId) { return 'ht_convex_session_' + profileId; }
+function _randomHex(byteCount = 32) {
+  const bytes = crypto.getRandomValues(new Uint8Array(byteCount));
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+async function _pinProof(pin, saltHex) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+  const salt = new Uint8Array((saltHex.match(/.{2}/g) || []).map(v => parseInt(v, 16)));
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt, iterations:210000 }, key, 256);
+  return Array.from(new Uint8Array(bits), b => b.toString(16).padStart(2, '0')).join('');
+}
+async function _authenticateCloud(profile, pin) {
+  let token = localStorage.getItem(_cloudTokenKey(profile.id));
+  if (token) {
+    try {
+      await _convexClient.query(convex.anyApi.app.status, { profileId:profile.id, sessionToken:token });
+      _cloudSessionToken = token;
+      return true;
+    } catch { localStorage.removeItem(_cloudTokenKey(profile.id)); }
+  }
+  if (!pin) return false;
+
+  const challenge = await _convexClient.query(convex.anyApi.auth.challenge, { profileId:profile.id });
+  token = _randomHex();
+  if (challenge.registered) {
+    const proof = await _pinProof(pin, challenge.pinSalt);
+    await _convexClient.mutation(convex.anyApi.auth.login, {
+      profileId:profile.id, pinProof:proof, sessionToken:token,
+    });
+  } else {
+    const registrationCode = window.prompt('Enter the one-time Convex registration code for this profile:');
+    if (!registrationCode) throw new Error('Cloud registration was cancelled.');
+    const pinSalt = _randomHex(16);
+    const pinProof = await _pinProof(pin, pinSalt);
+    await _convexClient.mutation(convex.anyApi.auth.register, {
+      profileId:profile.id, profileName:profile.name, pinSalt, pinProof,
+      sessionToken:token, registrationCode:registrationCode.trim(),
+    });
+  }
+  localStorage.setItem(_cloudTokenKey(profile.id), token);
+  _cloudSessionToken = token;
+  return true;
+}
 
 const DB = {
   KEY: 'ht_v2',
@@ -1697,7 +1933,7 @@ const DB = {
     return {
       checkins:     [],
       habits:       { reading:[], gym:[], noPorn:[], coding:[], japanese:[], socialExposure:[] },
-      priorities:   { items:['Gym','Coding','Business'], completed:[] },
+      priorities:   { items:['Reading','Coding','Business'], completed:[] },
       sleep:        [],
       weight:       [],
       startingWeight: null,
@@ -2021,7 +2257,8 @@ function calcStreak(dates) {
 
 function calcHabitScore(data) {
   const week = new Date(); week.setDate(week.getDate()-7);
-  const weights = { reading:20, gym:25, noPorn:20, coding:20, japanese:10, socialExposure:5 };
+  // Gym scoring is retired with the gym feature; the old key remains in saved data.
+  const weights = { reading:25, /* gym:25, */ noPorn:25, coding:25, japanese:15, socialExposure:10 };
   let score = 0;
   for (const [k,w] of Object.entries(weights)) {
     const cnt = (data.habits[k]||[]).filter(d=>new Date(d)>=week).length;
@@ -2049,15 +2286,15 @@ function generateAISummary(data) {
     }
   }
 
-  // Weight
-  const rw = data.weight.filter(w=>new Date(w.date)>=week).sort((a,b)=>a.date.localeCompare(b.date));
-  if (rw.length>=2) {
-    const chg = (rw[rw.length-1].weight - rw[0].weight).toFixed(1);
-    insights.push(`Weight ${+chg>0?'increased by':'dropped'} ${Math.abs(chg)}kg this week. ${+chg<0?'Keep it up!':''}`);
-  }
+  // Retired weight insight retained for easy restoration.
+  // const rw = data.weight.filter(w=>new Date(w.date)>=week).sort((a,b)=>a.date.localeCompare(b.date));
+  // if (rw.length>=2) {
+  //   const chg = (rw[rw.length-1].weight - rw[0].weight).toFixed(1);
+  //   insights.push(`Weight ${+chg>0?'increased by':'dropped'} ${Math.abs(chg)}kg this week. ${+chg<0?'Keep it up!':''}`);
+  // }
 
   // Habits
-  const hNames = { reading:'Reading', gym:'Gym', noPorn:'No Porn', coding:'Coding', japanese:'Japanese', socialExposure:'Social Exposure' };
+  const hNames = { reading:'Reading', /* gym:'Gym', */ noPorn:'No Porn', coding:'Coding', japanese:'Japanese', socialExposure:'Social Exposure' };
   for (const [k,n] of Object.entries(hNames)) {
     const rc = (data.habits[k]||[]).filter(d=>new Date(d)>=week).length;
     const pc = (data.habits[k]||[]).filter(d=>new Date(d)>=twoW&&new Date(d)<week).length;
@@ -2075,8 +2312,8 @@ function generateAISummary(data) {
   if (done>0) insights.push(`${done} goal${done!==1?'s':''} completed. Time to set the next challenge.`);
 
   if (!insights.length) {
-    insights.push('Start logging your sleep, weight, and spending to see personalized insights here.');
-    insights.push('Use the Quick Log cards on your Dashboard to build a daily tracking habit.');
+    insights.push('Start logging your sleep, goals, and tasks to see personalized insights here.');
+    insights.push('Use the Dashboard and tracker pages to build a daily tracking habit.');
   }
   return insights;
 }
@@ -2084,14 +2321,28 @@ function generateAISummary(data) {
 /* ═══════════════════════════════════════
    PAGE ROUTING
 ═══════════════════════════════════════ */
+const RETIRED_PAGES = new Set(['weight', 'financial', 'gym']);
+
 function showPage(name) {
+  if (RETIRED_PAGES.has(name)) name = 'dashboard';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   document.querySelector(`[data-page="${name}"]`).classList.add('active');
   window.scrollTo(0,0);
 
-  const renderers = { sleep: renderSleep, weight: renderWeight, goals: renderGoals, financial: renderFinancial, gym: renderGym, todo: renderTodo, notes: renderNotes, calories: renderCalories };
+  const renderers = {
+    sleep: renderSleep,
+    goals: renderGoals,
+    todo: renderTodo,
+    notes: renderNotes,
+    calories: renderCalories,
+    /* Retired feature renderers retained for easy restoration:
+    weight: renderWeight,
+    financial: renderFinancial,
+    gym: renderGym,
+    */
+  };
   if (renderers[name]) renderers[name]();
 }
 
@@ -2101,8 +2352,9 @@ function showPage(name) {
 function renderDashboard() {
   renderPriorities();
   renderQuickSleepCard();
-  renderQuickWeightCard();
-  renderQuickFinancialCard();
+  // Retired feature cards retained for easy restoration:
+  // renderQuickWeightCard();
+  // renderQuickFinancialCard();
   renderLifeSummaryCard();
   renderAICard();
 }
@@ -2295,18 +2547,19 @@ function renderLifeSummaryCard() {
   const d = DB.get();
   const sleepLogs = Array.isArray(d.sleep) ? [...d.sleep].sort((a,b)=>b.date.localeCompare(a.date)) : [];
   const lastSleep = sleepLogs[0];
-  const weightLogs = Array.isArray(d.weight) ? [...d.weight].sort((a,b)=>b.date.localeCompare(a.date)) : [];
-  const currentWeight = weightLogs[0];
-  const key = _selectedMonthKey(d);
-  const balance = _remainingCashFor(d, key);
+  // Retired feature summary values retained for easy restoration:
+  // const weightLogs = Array.isArray(d.weight) ? [...d.weight].sort((a,b)=>b.date.localeCompare(a.date)) : [];
+  // const currentWeight = weightLogs[0];
+  // const key = _selectedMonthKey(d);
+  // const balance = _remainingCashFor(d, key);
   const t = today();
   const doneCount = d.priorities.completed.filter(c=>c.date===t).length;
   const totalCount = d.priorities.items.length;
 
   const parts = [
     lastSleep ? `${lastSleep.hours} hours slept` : 'No sleep logged',
-    currentWeight ? `${currentWeight.weight}kg` : 'No weight logged',
-    `£${balance.toFixed(2)} available`,
+    // currentWeight ? `${currentWeight.weight}kg` : 'No weight logged',
+    // `£${balance.toFixed(2)} available`,
     `${doneCount}/${totalCount} priorities completed`
   ];
 
@@ -3228,7 +3481,6 @@ function renderFinancial() {
   renderQuickLog();
   renderFixedExpenses();
   renderReservedFunds();
-  renderBudgetCategories();
   renderFinanceAnalysis();
 }
 
@@ -5625,7 +5877,104 @@ const _TODO_KEYS = ['todosByDate','todosDeleted'];
 
 function _scheduleSync(d) {
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(() => { _syncToSupabase(d); _syncNotesToSupabase(); _syncTodosToSupabase(); }, 700);
+  if (_convexApplyingRemote) return;
+  _syncTimer = setTimeout(() => _syncToConvex(d), 700);
+}
+
+async function _syncToConvex(d) {
+  if (!_convexClient || !_profile || !_cloudSessionToken || !d) return;
+  _setNotesSync('saving');
+  _setTodoSync('saving');
+  try {
+    const result = await _convexClient.mutation(convex.anyApi.app.save, {
+      profileId:_profile, sessionToken:_cloudSessionToken, state:d, baseVersion:_lastConvexVersion,
+    });
+    if (result?.conflict) {
+      _applyConvexResult(result, _profile);
+      toast('Newer cloud changes were loaded. Please repeat your last edit.');
+      return;
+    }
+    _lastConvexVersion = Math.max(_lastConvexVersion, result?.version ?? -1);
+    _setNotesSync('synced');
+    _setTodoSync('synced');
+  } catch (e) {
+    console.warn('Convex sync failed:', e.message || e);
+    _setNotesSync('offline');
+    _setTodoSync('offline');
+  }
+}
+
+async function _loadFromConvex(profileId) {
+  if (!_convexClient || !_cloudSessionToken) return null;
+  try {
+    const result = await _convexClient.query(convex.anyApi.app.load, {
+      profileId, sessionToken:_cloudSessionToken,
+    });
+    if (_profile !== profileId) return null;
+    _lastConvexVersion = result.version ?? 0;
+    return result?.state ? Object.assign(DB.defaults(), result.state) : null;
+  } catch (e) {
+    console.warn('Convex load failed; using offline cache:', e.message || e);
+    return null;
+  }
+}
+
+function _renderActivePageAfterCloudUpdate() {
+  const name = document.querySelector('.page.active')?.id?.replace('page-', '') || 'dashboard';
+  if (name === 'dashboard') return renderDashboard();
+  const renderers = {
+    sleep:renderSleep,
+    goals:renderGoals,
+    todo:renderTodo,
+    notes:renderNotes,
+    calories:renderCalories,
+    /* Retired feature renderers retained for easy restoration:
+    weight:renderWeight,
+    financial:renderFinancial,
+    gym:renderGym,
+    */
+  };
+  if (renderers[name]) renderers[name]();
+}
+
+function _applyConvexResult(result, profileId) {
+  if (!result?.state || !_state || _profile !== profileId) return;
+  const version = result.version ?? 0;
+  if (version <= _lastConvexVersion) return;
+  _lastConvexVersion = version;
+  _convexApplyingRemote = true;
+  try {
+    _state = Object.assign(DB.defaults(), result.state);
+    localStorage.setItem(DB.KEY + '_' + profileId, JSON.stringify(_state));
+    _renderActivePageAfterCloudUpdate();
+    _setNotesSync('synced');
+    _setTodoSync('synced');
+  } finally {
+    _convexApplyingRemote = false;
+  }
+}
+
+function _subscribeConvex(profileId) {
+  if (!_convexClient) return;
+  if (_convexUnsubscribe) { try { _convexUnsubscribe(); } catch {} _convexUnsubscribe = null; }
+  _convexUnsubscribe = _convexClient.onUpdate(
+    convex.anyApi.app.load,
+    { profileId, sessionToken:_cloudSessionToken },
+    result => _applyConvexResult(result, profileId),
+    error => console.warn('Convex live update failed:', error?.message || error)
+  );
+}
+
+function _refreshFromConvexSoon() {
+  if (!_convexClient || !_profile) return;
+  clearTimeout(_convexRefreshTimer);
+  const profileId = _profile;
+  _convexRefreshTimer = setTimeout(async () => {
+    try { _applyConvexResult(await _convexClient.query(convex.anyApi.app.load, {
+      profileId, sessionToken:_cloudSessionToken,
+    }), profileId); }
+    catch (e) { console.warn('Convex refresh failed:', e.message || e); }
+  }, 200);
 }
 
 async function _syncToSupabase(d) {
@@ -5893,8 +6242,6 @@ function _renderProfileScreen() {
   const grid = document.getElementById('profile-grid');
   if (!grid) return;
 
-  if (profiles.length === 0) { showSetupScreen(false); return; }
-
   let html = '';
   profiles.forEach(p => {
     const grad = p.grad || _avatarGrad(p.id);
@@ -5911,8 +6258,11 @@ function _renderProfileScreen() {
 
   document.getElementById('setup-screen').style.display   = 'none';
   document.getElementById('pin-screen').style.display     = 'none';
+  document.getElementById('cloud-signin-screen').style.display = 'none';
   document.getElementById('auth-loading').style.display   = 'none';
   document.getElementById('profile-screen').style.display = 'flex';
+  const tagline = document.getElementById('profile-tagline');
+  if (tagline) tagline.textContent = profiles.length ? "Who's tracking today?" : 'Sign in to sync, or create a new profile';
 }
 
 /* ═══════════════════════════════════════
@@ -5924,6 +6274,7 @@ function showSetupScreen(hasExisting) {
   _setupName = ''; _setupPin1 = ''; _setupBuf = ''; _setupStep = 1;
   document.getElementById('profile-screen').style.display = 'none';
   document.getElementById('pin-screen').style.display     = 'none';
+  document.getElementById('cloud-signin-screen').style.display = 'none';
   document.getElementById('auth-loading').style.display   = 'none';
   document.getElementById('setup-screen').style.display   = 'flex';
   const backBtn = document.getElementById('setup-back');
@@ -5985,7 +6336,7 @@ function setupPinKey(k) {
   }
 }
 
-function _finishSetup() {
+async function _finishSetup() {
   const err = document.getElementById('setup-pin-err');
   if (_setupBuf !== _setupPin1) {
     if (err) err.textContent = "PINs don't match — try again";
@@ -5993,9 +6344,29 @@ function _finishSetup() {
     if (area) { area.style.animation = 'pinShake .38s ease'; setTimeout(() => { area.style.animation=''; }, 420); }
     _setupBuf = ''; _updateSetupDots(); return;
   }
+  if (_convexClient) {
+    try {
+      const existing = await _convexClient.query(convex.anyApi.auth.resolveByName, { profileName:_setupName });
+      if (existing) {
+        if (err) err.textContent = 'That profile already exists. Use “Sign in to existing profile”.';
+        _setupBuf = ''; _updateSetupDots();
+        return;
+      }
+    } catch (e) {
+      if ((e.message || '').includes('PROFILE_NAME_AMBIGUOUS')) {
+        if (err) err.textContent = 'More than one profile has that name. Please use your original device.';
+        _setupBuf = ''; _updateSetupDots();
+        return;
+      }
+    }
+  }
   const profile = _createProfile(_setupName, _setupBuf);
   document.getElementById('setup-screen').style.display = 'none';
-  _startSession(profile.id);
+  const started = await _startSession(profile.id, _setupBuf);
+  if (!started) {
+    _saveProfiles(_loadProfiles().filter(p => p.id !== profile.id));
+    _renderProfileScreen();
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -6018,7 +6389,53 @@ function backToProfiles() {
   _pinBuf = '';
   document.getElementById('pin-screen').style.display   = 'none';
   document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('cloud-signin-screen').style.display = 'none';
   _renderProfileScreen();
+}
+
+function showCloudSignIn() {
+  document.getElementById('profile-screen').style.display = 'none';
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('cloud-signin-screen').style.display = 'flex';
+  document.getElementById('cloud-signin-err').textContent = '';
+  document.getElementById('cloud-signin-pin').value = '';
+  setTimeout(() => document.getElementById('cloud-signin-name').focus(), 80);
+}
+
+async function signInExistingProfile(event) {
+  event.preventDefault();
+  const nameEl = document.getElementById('cloud-signin-name');
+  const pinEl = document.getElementById('cloud-signin-pin');
+  const errEl = document.getElementById('cloud-signin-err');
+  const button = document.getElementById('cloud-signin-btn');
+  const profileName = nameEl.value.trim();
+  const pin = pinEl.value.trim();
+  errEl.textContent = '';
+  if (!profileName) { errEl.textContent = 'Enter your profile name.'; return; }
+  if (!/^\d{4}$/.test(pin)) { errEl.textContent = 'Enter your 4-digit PIN.'; return; }
+  if (!_convexClient) { errEl.textContent = 'Cloud sign-in is unavailable. Check your connection.'; return; }
+
+  button.disabled = true;
+  button.textContent = 'Signing in…';
+  try {
+    const cloudProfile = await _convexClient.query(convex.anyApi.auth.resolveByName, { profileName });
+    if (!cloudProfile) throw new Error('PROFILE_NOT_FOUND');
+    await _authenticateCloud({ id:cloudProfile.profileId, name:cloudProfile.profileName }, pin);
+    const localProfile = _saveCloudProfile(cloudProfile, pin);
+    const started = await _startSession(localProfile.id);
+    if (!started) throw new Error('SIGN_IN_FAILED');
+  } catch (e) {
+    const message = e.message || '';
+    if (message.includes('PROFILE_NOT_FOUND')) errEl.textContent = 'No profile with that name was found.';
+    else if (message.includes('PROFILE_NAME_AMBIGUOUS')) errEl.textContent = 'More than one profile has that name. Please use your original device.';
+    else if (message.includes('LOGIN_LOCKED')) errEl.textContent = 'Too many attempts. Try again in 15 minutes.';
+    else errEl.textContent = 'Sign-in failed. Check your profile name and PIN.';
+    pinEl.value = '';
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Sign in & sync';
+  }
 }
 
 function _updatePinDots() {
@@ -6048,11 +6465,19 @@ async function _verifyPin() {
     setTimeout(() => { ps.style.animation=''; }, 420);
     _pinBuf = ''; _updatePinDots(); return;
   }
-  await _startSession(id);
+  await _startSession(id, _pinBuf);
 }
 
 function logout() {
+  const oldProfile = _profile;
+  const oldToken = _cloudSessionToken;
+  if (_convexClient && oldProfile && oldToken) {
+    _convexClient.mutation(convex.anyApi.auth.logout, { profileId:oldProfile, sessionToken:oldToken }).catch(()=>{});
+    localStorage.removeItem(_cloudTokenKey(oldProfile));
+  }
+  _cloudSessionToken = null;
   _clearSession();
+  if (_convexUnsubscribe) { try { _convexUnsubscribe(); } catch {} _convexUnsubscribe = null; }
   if (_notesRealtimeChan && _sb) { try { _sb.removeChannel(_notesRealtimeChan); } catch {} _notesRealtimeChan = null; }
   _profile = null; _state = null;
   Object.keys(_charts).forEach(destroyChart);
@@ -6062,14 +6487,32 @@ function logout() {
   _renderProfileScreen();
 }
 
-async function _startSession(id) {
+async function _startSession(id, pin = null) {
+  const profile = _findProfile(id);
+  if (!profile) return false;
+  try {
+    const authenticated = await _authenticateCloud(profile, pin);
+    if (!authenticated) {
+      _clearSession();
+      selectProfile(id);
+      return false;
+    }
+  } catch (e) {
+    console.warn('Convex authentication failed:', e.message || e);
+    const errEl = document.getElementById('pin-err');
+    if (errEl) errEl.textContent = (e.message || '').includes('LOGIN_LOCKED')
+      ? 'Too many attempts. Try again in 15 minutes.'
+      : 'Cloud sign-in failed. Check your PIN or registration code.';
+    selectProfile(id);
+    return false;
+  }
   _profile = id; _setSession(id);
   document.getElementById('profile-screen').style.display = 'none';
   document.getElementById('pin-screen').style.display     = 'none';
   document.getElementById('setup-screen').style.display   = 'none';
   document.getElementById('auth-loading').style.display   = 'flex';
 
-  let data = await _loadFromSupabase(id);
+  let data = await _loadFromConvex(id);
   if (!data) { try { data = JSON.parse(localStorage.getItem(DB.KEY + '_' + id)); } catch {} }
 
   // Migrate legacy data (pre-dynamic-profile keys) if this profile has no data yet
@@ -6105,9 +6548,8 @@ async function _startSession(id) {
 
   // Notes: Supabase is the source of truth — pull the latest right after login,
   // then keep in sync on focus / tab-visible and (if enabled) via realtime.
-  _loadNotesFromSupabase(id);
-  _loadTodosFromSupabase(id);
-  _subscribeNotesRealtime(id);
+  _subscribeConvex(id);
+  return true;
 }
 
 /* Live-sync notes when the tab regains focus or becomes visible, and via a
@@ -6127,6 +6569,8 @@ function _subscribeNotesRealtime(id) {
 }
 window.addEventListener('focus', () => { _refreshNotesSoon(); _refreshTodosSoon(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { _refreshNotesSoon(); _refreshTodosSoon(); } });
+window.addEventListener('focus', _refreshFromConvexSoon);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) _refreshFromConvexSoon(); });
 
 // Keyboard support
 document.addEventListener('keydown', e => {
@@ -6150,12 +6594,12 @@ document.addEventListener('keydown', e => {
    INIT
 ═══════════════════════════════════════ */
 async function initApp() {
-  if (SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
-    try { _sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
-    catch(e) { console.warn('Supabase init failed:', e); }
-  }
+  try { _convexClient = new convex.ConvexClient(CONVEX_URL); }
+  catch(e) { console.warn('Convex init failed; offline cache will be used:', e); }
   const session = _getSession();
-  if (session && _findProfile(session.id)) { await _startSession(session.id); return; }
+  if (session && _findProfile(session.id) && localStorage.getItem(_cloudTokenKey(session.id))) {
+    if (await _startSession(session.id)) return;
+  }
   _clearSession();
   document.getElementById('auth-loading').style.display = 'none';
   _renderProfileScreen();

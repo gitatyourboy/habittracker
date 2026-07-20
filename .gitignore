@@ -5,3 +5,15 @@ index.html.bak
 # OS cruft
 Thumbs.db
 .DS_Store
+
+# Local database exports (may contain private user data)
+backups/
+
+# Local credentials used for one-off database migration
+.env.local
+.env*.local
+*.local.txt
+node_modules/
+
+# Local assistant/editor settings
+.claude/
