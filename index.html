@@ -618,7 +618,12 @@ nav::-webkit-scrollbar{height:0}
 .consistency-cover-copy{flex:1;min-width:0}
 .consistency-cover-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--accent-2);margin-bottom:5px}
 .consistency-cover-sub{font-size:12px;color:var(--t2)}
+.consistency-cover-stats{display:flex;flex-direction:column;align-items:flex-end;gap:7px;min-width:220px}
 .consistency-cover-value{font-size:clamp(32px,5vw,48px);font-weight:800;letter-spacing:-.04em;font-feature-settings:"tnum" 1;white-space:nowrap}
+.consistency-cover-mini{display:flex;align-items:center;justify-content:flex-end;gap:14px;flex-wrap:wrap}
+.consistency-cover-mini-item{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15}
+.consistency-cover-mini-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.45px;color:var(--t3)}
+.consistency-cover-mini-value{font-size:12px;font-weight:800;font-feature-settings:"tnum" 1;color:var(--t1);margin-top:3px}
 .consistency-chevron{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(var(--accent-rgb),.14);color:var(--accent-2);font-size:14px;transition:transform .2s ease;flex-shrink:0}
 .consistency-chevron.open{transform:rotate(180deg)}
 .consistency-fold-content{display:none}
@@ -631,7 +636,11 @@ nav::-webkit-scrollbar{height:0}
 .consistency-missed-name{flex:1;min-width:150px;font-size:13px;font-weight:600;color:var(--t1)}
 .consistency-missed-meta{font-size:11px;color:var(--t3);white-space:nowrap}
 @media(max-width:650px){
-  .consistency-cover{padding:18px 16px;gap:12px}
+  .consistency-cover{padding:18px 16px;gap:12px;flex-wrap:wrap}
+  .consistency-cover-copy{flex-basis:calc(100% - 48px)}
+  .consistency-cover-stats{order:3;width:100%;min-width:0;align-items:flex-start;padding-top:4px;border-top:1px solid rgba(255,255,255,.07)}
+  .consistency-cover-mini{justify-content:flex-start}
+  .consistency-cover-mini-item{align-items:flex-start}
   .consistency-day{grid-template-columns:1fr auto;gap:8px 12px}
   .consistency-progress{grid-column:1/-1;order:3}
   .consistency-count{grid-column:1;grid-row:2;text-align:left}
@@ -1699,7 +1708,14 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
         <div class="consistency-cover-label">Average Completion Percentage</div>
         <div class="consistency-cover-sub" id="consistency-cover-sub">Open to view your daily breakdown</div>
       </div>
-      <div class="consistency-cover-value" id="consistency-cover-value">—</div>
+      <div class="consistency-cover-stats">
+        <div class="consistency-cover-value" id="consistency-cover-value">—</div>
+        <div class="consistency-cover-mini">
+          <div class="consistency-cover-mini-item"><span class="consistency-cover-mini-label">Today</span><span class="consistency-cover-mini-value" id="consistency-cover-today">—</span></div>
+          <div class="consistency-cover-mini-item"><span class="consistency-cover-mini-label">Weekly</span><span class="consistency-cover-mini-value" id="consistency-cover-weekly">—</span></div>
+          <div class="consistency-cover-mini-item"><span class="consistency-cover-mini-label">Monthly</span><span class="consistency-cover-mini-value" id="consistency-cover-monthly">—</span></div>
+        </div>
+      </div>
       <div class="consistency-chevron" id="consistency-cover-chevron">▼</div>
     </button>
 
@@ -5526,6 +5542,12 @@ function _consistencyPct(record) {
   return record && record.total ? Math.round(record.done / record.total * 100) : null;
 }
 
+function _consistencyTaskRate(records) {
+  const total = records.reduce((sum, record) => sum + (record.total || 0), 0);
+  const done = records.reduce((sum, record) => sum + (record.done || 0), 0);
+  return total ? Math.round(done / total * 100) : null;
+}
+
 function _consistencyColor(pct) {
   if (pct == null) return 'var(--t3)';
   return pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
@@ -5625,6 +5647,10 @@ function renderConsistency() {
     : 0;
   const todayRecord = records[today()];
   const todayPct = _consistencyPct(todayRecord);
+  const datedRecords = Object.values(records).filter(record => record.date <= today() && record.total > 0);
+  const weeklyPct = _consistencyTaskRate(datedRecords.filter(record => record.date >= _consistencyDateKeyOffset(6)));
+  const monthPrefix = today().slice(0,7);
+  const monthlyPct = _consistencyTaskRate(datedRecords.filter(record => record.date.slice(0,7) === monthPrefix));
   const streak = _consistencyStreak(records);
   const perfectDays = trackedDays.filter(day => _consistencyPct(day) === 100).length;
   const rangeLabel = _consistencyRange === '7' ? '7-Day' : _consistencyRange === '30' ? '30-Day' : 'All-Time';
@@ -5640,6 +5666,11 @@ function renderConsistency() {
   document.getElementById('consistency-unfinished-chevron').classList.toggle('open', _consistencyUnfinishedOpen);
   document.getElementById('consistency-cover-value').textContent = trackedDays.length ? dailyAverage + '%' : '—';
   document.getElementById('consistency-cover-value').style.color = _consistencyColor(trackedDays.length ? dailyAverage : null);
+  [['today',todayPct],['weekly',weeklyPct],['monthly',monthlyPct]].forEach(([period,pct]) => {
+    const element = document.getElementById('consistency-cover-' + period);
+    element.textContent = pct == null ? '—' : pct + '%';
+    element.style.color = _consistencyColor(pct);
+  });
   document.getElementById('consistency-cover-sub').textContent = `${rangeLabel} average · ${trackedDays.length} day${trackedDays.length===1?'':'s'} with tasks · ${_consistencyDetailsOpen?'Click to hide details':'Click to view daily details'}`;
   document.getElementById('consistency-unfinished-count').textContent = `${unfinishedTasks.length} task${unfinishedTasks.length===1?'':'s'}`;
 
