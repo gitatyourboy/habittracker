@@ -632,9 +632,11 @@ nav::-webkit-scrollbar{height:0}
 .consistency-fold-title{flex:1;font-size:14px;font-weight:700}
 .consistency-fold-count{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;background:rgba(248,113,113,.12);color:#f87171}
 .consistency-missed-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-.consistency-missed-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:10px;background:var(--fill);border:1px solid var(--border);flex-wrap:wrap}
+.consistency-missed-row{display:block;padding:11px 13px;border-radius:10px;background:var(--fill);border:1px solid var(--border)}
+.consistency-missed-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .consistency-missed-name{flex:1;min-width:150px;font-size:13px;font-weight:600;color:var(--t1)}
 .consistency-missed-meta{font-size:11px;color:var(--t3);white-space:nowrap}
+.consistency-missed-progress{display:flex;align-items:center;gap:8px;padding:10px 0 0 29px}
 @media(max-width:650px){
   .consistency-cover{padding:18px 16px;gap:12px;flex-wrap:wrap}
   .consistency-cover-copy{flex-basis:calc(100% - 48px)}
@@ -645,6 +647,49 @@ nav::-webkit-scrollbar{height:0}
   .consistency-progress{grid-column:1/-1;order:3}
   .consistency-count{grid-column:1;grid-row:2;text-align:left}
   .consistency-pct{grid-column:2;grid-row:1/3}
+  .consistency-missed-progress{padding-left:0}
+}
+
+/* Day planner */
+.planner-datebar{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.planner-datebar .fg{max-width:210px}
+.planner-date-title{flex:1;min-width:220px;padding:9px 0;font-size:14px;font-weight:700;color:var(--t1)}
+.planner-add{margin-bottom:16px}
+.planner-layout{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(0,1.7fr);gap:16px;align-items:start}
+.planner-panel{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.planner-panel-head{padding:16px;border-bottom:1px solid var(--border)}
+.planner-panel-head h3{font-size:14px;color:var(--t1);margin:0 0 4px}
+.planner-panel-head p{font-size:11.5px;color:var(--t2);line-height:1.5}
+.planner-tray{padding:10px;display:flex;flex-direction:column;gap:8px;max-height:660px;overflow:auto}
+.planner-task{display:flex;align-items:center;gap:9px;padding:11px;border-radius:12px;background:var(--fill);border:1px solid var(--border);cursor:grab;transition:var(--tr);user-select:none}
+.planner-task:hover,.planner-task.selected{border-color:rgba(var(--accent-rgb),.48);background:rgba(var(--accent-rgb),.09)}
+.planner-task.dragging{opacity:.48}
+.planner-task-copy{flex:1;min-width:0}
+.planner-task-name{font-size:12.5px;font-weight:650;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.planner-task-meta{font-size:10.5px;color:var(--t3);margin-top:3px}
+.planner-task-grip{color:var(--t3);font-size:14px;letter-spacing:-2px}
+.planner-timeline{max-height:660px;overflow:auto;scrollbar-gutter:stable}
+.planner-slot{display:grid;grid-template-columns:70px minmax(0,1fr);min-height:70px;border-bottom:1px solid var(--border)}
+.planner-slot:last-child{border-bottom:none}
+.planner-time{padding:11px 10px;font-size:11px;font-weight:700;color:var(--t3);text-align:right;border-right:1px solid var(--border);font-feature-settings:"tnum" 1}
+.planner-dropzone{padding:7px;display:flex;flex-direction:column;gap:6px;cursor:pointer;transition:background .15s;min-width:0}
+.planner-dropzone:hover,.planner-dropzone.drag-over{background:rgba(var(--accent-rgb),.08)}
+.planner-event{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.28);min-width:0}
+.planner-event.private{background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.25)}
+.planner-event.done{opacity:.56}
+.planner-event-time{font-size:10.5px;font-weight:750;color:var(--accent-2);white-space:nowrap}
+.planner-event.private .planner-event-time{color:var(--info)}
+.planner-event-copy{flex:1;min-width:0;display:flex;flex-direction:column}
+.planner-event-name{font-size:12px;font-weight:650;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.planner-event-kind{font-size:9.5px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+.planner-event .db{flex-shrink:0}
+.planner-empty{padding:22px 14px;text-align:center;color:var(--t3);font-size:12px;line-height:1.55}
+.planner-drop-hint{padding:10px;color:var(--t3);font-size:10.5px;font-style:italic}
+@media(max-width:760px){
+  .planner-layout{grid-template-columns:1fr}
+  .planner-tray{max-height:280px}
+  .planner-timeline{max-height:620px}
+  .planner-datebar .fg{max-width:none}
 }
 
 /* ── Calorie Tracker page ── */
@@ -1175,6 +1220,9 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
   <button class="nbtn" data-page="todo" onclick="showPage('todo')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>To-Do List
   </button>
+  <button class="nbtn" data-page="planner" onclick="showPage('planner')">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18M8 13h3M8 17h6"/></svg>Day Planner
+  </button>
   <button class="nbtn" data-page="consistency" onclick="showPage('consistency')">
     <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-7"/></svg>Consistency
   </button>
@@ -1698,6 +1746,38 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
   </div>
 </div>
 
+<!-- DAY PLANNER PAGE -->
+<div id="page-planner" class="page">
+  <div class="sp">
+    <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg>Schedule</span><h1>Day Planner</h1><p>Drag your daily tasks onto the timeline, or add routine events that stay outside your to-do list</p></div>
+
+    <div class="cc planner-datebar">
+      <div class="fg"><label>Date</label><input class="fi" type="date" id="planner-date-picker" onchange="setPlannerDate(this.value)"></div>
+      <div class="planner-date-title" id="planner-date-label"></div>
+      <button type="button" class="sbtn sbtn-sm" onclick="setPlannerDateToday()">Today</button>
+      <button type="button" class="sbtn sbtn-sm" onclick="setPlannerDateTomorrow()">Tomorrow</button>
+    </div>
+
+    <div class="fc planner-add">
+      <div class="fg" style="flex:3;min-width:180px"><label>Planner-only event</label><input class="fi" type="text" id="planner-event-text" placeholder="Morning gym, commute, lunch..."></div>
+      <div class="fg"><label>Start</label><input class="fi" type="time" id="planner-event-start"></div>
+      <div class="fg"><label>End</label><input class="fi" type="time" id="planner-event-end"></div>
+      <button type="button" class="sbtn" onclick="addPlannerEvent()">Add to Planner</button>
+    </div>
+
+    <div class="planner-layout">
+      <aside class="planner-panel">
+        <div class="planner-panel-head"><h3>Daily To-Do Items</h3><p>Drag a task to a time slot. On touch screens, tap a task and then tap a slot.</p></div>
+        <div class="planner-tray" id="planner-todo-tray"></div>
+      </aside>
+      <section class="planner-panel">
+        <div class="planner-panel-head"><h3 id="planner-timeline-title">Timeline</h3><p>Dropping a to-do schedules it here without creating a duplicate task.</p></div>
+        <div class="planner-timeline" id="planner-timeline"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ CONSISTENCY PAGE ═══ -->
 <div id="page-consistency" class="page">
   <div class="sp">
@@ -2071,6 +2151,7 @@ const DB = {
       todosByDate:        {},
       todosDeleted:       {},
       todoHistory:        [],
+      plannerEventsByDate:{},
       notes:              [],
       folders:            [],
       notesDeleted:       [],
@@ -2455,6 +2536,7 @@ function showPage(name) {
   const renderers = {
     goals: renderGoals,
     todo: renderTodo,
+    planner: renderPlanner,
     consistency: renderConsistency,
     notes: renderNotes,
     /* Retired feature renderers retained for easy restoration:
@@ -5024,6 +5106,22 @@ function todoProgColor(pct) {
   return pct >= 61 ? '#22c55e' : pct >= 40 ? '#eab308' : '#ef4444';
 }
 
+function _todoEffectiveProgress(task) {
+  if (!task) return 0;
+  if (task.done) return 100;
+  return Math.min(100, Math.max(0, parseInt(task.progress) || 0));
+}
+
+function _refreshTodoHistoryEntry(entry) {
+  const tasks = Array.isArray(entry?.tasks) ? entry.tasks : [];
+  entry.completedCount = tasks.filter(task => _todoEffectiveProgress(task) >= 100).length;
+  entry.skippedCount = tasks.length - entry.completedCount;
+  entry.completionPct = tasks.length
+    ? Math.round(tasks.reduce((sum, task) => sum + _todoEffectiveProgress(task), 0) / tasks.length)
+    : 0;
+  return entry;
+}
+
 /* Backfills d.todoHistory and d.todosByDate for profiles saved before per-date
    planning existed. Any old flat d.todos list (pre-dates this feature) is
    folded into today's bucket so nothing gets lost. */
@@ -5037,6 +5135,9 @@ function _todoLegacyId(dateKey, t, idx) {
 function _todoNormalize(dateKey, t, idx) {
   if (!t) return t;
   if (!t.id) t.id = _todoLegacyId(dateKey, t, idx);
+  if (t.done) t.progress = 100;
+  else t.progress = Math.min(100, Math.max(0, parseInt(t.progress) || 0));
+  if (t.progress >= 100) t.done = true;
   // Fixed (not "now") updatedAt for legacy items so migration timing never wins a merge.
   if (!t.updatedAt) t.updatedAt = t.createdAt ? new Date(t.createdAt + 'T12:00:00').toISOString() : '2000-01-01T00:00:00.000Z';
   return t;
@@ -5199,7 +5300,12 @@ function toggleTodo(i) {
   const dateKey = _selectedTodoDate(d0);
   DB.update(d => {
     const bucket = _ensureTodoDateBucket(d, dateKey);
-    if (bucket[i]) { bucket[i].done = !bucket[i].done; bucket[i].updatedAt = _nowIso(); }
+    if (bucket[i]) {
+      const completing = _todoEffectiveProgress(bucket[i]) < 100;
+      bucket[i].done = completing;
+      bucket[i].progress = completing ? 100 : 0;
+      bucket[i].updatedAt = _nowIso();
+    }
   });
   renderTodo();
 }
@@ -5227,9 +5333,227 @@ function updateTodoProgress(orig, val) {
   const dateKey = _selectedTodoDate(d0);
   DB.update(d => {
     const bucket = _ensureTodoDateBucket(d, dateKey);
-    if (bucket[orig]) { bucket[orig].progress = pct; bucket[orig].updatedAt = _nowIso(); }
+    if (bucket[orig]) {
+      bucket[orig].progress = pct;
+      bucket[orig].done = pct >= 100;
+      bucket[orig].updatedAt = _nowIso();
+    }
   });
   renderTodo();
+}
+
+/* DAY PLANNER
+   Planner to-do cards are the same objects used by the dated To-Do List.
+   Planner-only events live separately so routines never inflate task totals. */
+let _plannerSelectedTodoId = null;
+
+function _plannerMigrate(d) {
+  _todoHistoryMigrate(d);
+  if (!d.plannerEventsByDate || typeof d.plannerEventsByDate !== 'object') d.plannerEventsByDate = {};
+}
+
+function _ensurePlannerEventBucket(d, dateKey) {
+  if (!d.plannerEventsByDate || typeof d.plannerEventsByDate !== 'object') d.plannerEventsByDate = {};
+  if (!Array.isArray(d.plannerEventsByDate[dateKey])) d.plannerEventsByDate[dateKey] = [];
+  return d.plannerEventsByDate[dateKey];
+}
+
+function _plannerEndTime(startTime) {
+  const match = /^(\d{2}):(\d{2})$/.exec(startTime || '');
+  if (!match) return '';
+  const minutes = Math.min(1439, (+match[1] * 60) + (+match[2]) + 60);
+  return String(Math.floor(minutes / 60)).padStart(2,'0') + ':' + String(minutes % 60).padStart(2,'0');
+}
+
+function setPlannerDate(dateStr) {
+  if (!dateStr) return;
+  _plannerSelectedTodoId = null;
+  DB.update(d => { d.selectedTodoDate = dateStr; });
+  renderPlanner();
+}
+
+function setPlannerDateToday() { setPlannerDate(today()); }
+function setPlannerDateTomorrow() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+  setPlannerDate(_dateKey(date));
+}
+
+function addPlannerEvent() {
+  const textInput = document.getElementById('planner-event-text');
+  const startInput = document.getElementById('planner-event-start');
+  const endInput = document.getElementById('planner-event-end');
+  const text = textInput.value.trim();
+  const startTime = startInput.value;
+  const endTime = endInput.value || _plannerEndTime(startTime);
+  if (!text) return toast('Enter an event name');
+  if (!startTime) return toast('Choose a start time');
+  if (endTime && endTime <= startTime) return toast('End time must be after the start time');
+  const dateKey = _selectedTodoDate(DB.get());
+  DB.update(d => {
+    _plannerMigrate(d);
+    _ensurePlannerEventBucket(d, dateKey).push({
+      id:_uid(), text, startTime, endTime, createdAt:_nowIso(), updatedAt:_nowIso()
+    });
+  });
+  textInput.value = '';
+  startInput.value = '';
+  endInput.value = '';
+  toast('Added to your planner','ok');
+  renderPlanner();
+}
+
+function deletePlannerEvent(id) {
+  showConfirm('Remove this planner-only event?', () => {
+    const dateKey = _selectedTodoDate(DB.get());
+    DB.update(d => {
+      const events = _ensurePlannerEventBucket(d, dateKey);
+      d.plannerEventsByDate[dateKey] = events.filter(event => event.id !== id);
+    });
+    renderPlanner();
+  });
+}
+
+function selectPlannerTodo(id) {
+  _plannerSelectedTodoId = _plannerSelectedTodoId === id ? null : id;
+  renderPlanner();
+}
+
+function plannerDragStart(event, id) {
+  _plannerSelectedTodoId = id;
+  event.currentTarget.classList.add('dragging');
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', id);
+}
+
+function plannerDragEnd(event) {
+  event.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.planner-dropzone.drag-over').forEach(slot => slot.classList.remove('drag-over'));
+}
+
+function plannerDragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.classList.add('drag-over');
+}
+
+function plannerDragLeave(event) {
+  event.currentTarget.classList.remove('drag-over');
+}
+
+function plannerDrop(event, startTime) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.classList.remove('drag-over');
+  const id = event.dataTransfer.getData('text/plain') || _plannerSelectedTodoId;
+  if (id) schedulePlannerTodo(id, startTime);
+}
+
+function plannerSlotClick(startTime) {
+  if (_plannerSelectedTodoId) schedulePlannerTodo(_plannerSelectedTodoId, startTime);
+}
+
+function schedulePlannerTodo(id, startTime) {
+  const dateKey = _selectedTodoDate(DB.get());
+  let found = false;
+  DB.update(d => {
+    const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
+    if (!task || _todoEffectiveProgress(task) >= 100) return;
+    task.startTime = startTime;
+    task.endTime = _plannerEndTime(startTime);
+    task.updatedAt = _nowIso();
+    found = true;
+  });
+  _plannerSelectedTodoId = null;
+  if (found) toast(`Task scheduled for ${startTime}`,'ok');
+  renderPlanner();
+}
+
+function unschedulePlannerTodo(id) {
+  const dateKey = _selectedTodoDate(DB.get());
+  DB.update(d => {
+    const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
+    if (!task) return;
+    task.startTime = '';
+    task.endTime = '';
+    task.updatedAt = _nowIso();
+  });
+  renderPlanner();
+}
+
+function plannerToggleTodo(id) {
+  const dateKey = _selectedTodoDate(DB.get());
+  DB.update(d => {
+    const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
+    if (!task) return;
+    const completing = _todoEffectiveProgress(task) < 100;
+    task.done = completing;
+    task.progress = completing ? 100 : 0;
+    task.updatedAt = _nowIso();
+  });
+  renderPlanner();
+}
+
+function _plannerEventHtml(event, kind) {
+  const isTodo = kind === 'todo';
+  const done = isTodo && _todoEffectiveProgress(event) >= 100;
+  const time = [event.startTime, event.endTime].filter(Boolean).join('–');
+  return `<div class="planner-event${isTodo?'':' private'}${done?' done':''}" onclick="event.stopPropagation()">
+    ${isTodo ? `<button class="tc${done?' on':''}" title="${done?'Mark unfinished':'Complete task'}" onclick="event.stopPropagation();plannerToggleTodo('${event.id}')">${done?'<svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</button>` : ''}
+    <span class="planner-event-time">${escHtml(time)}</span>
+    <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span><span class="planner-event-kind">${isTodo?'To-do item':'Planner only'}</span></span>
+    <button class="db" title="${isTodo?'Remove from timeline':'Delete event'}" onclick="event.stopPropagation();${isTodo?`unschedulePlannerTodo('${event.id}')`:`deletePlannerEvent('${event.id}')`}">✕</button>
+  </div>`;
+}
+
+function renderPlanner() {
+  const d = DB.get();
+  _plannerMigrate(d);
+  const dateKey = _selectedTodoDate(d);
+  const todos = _getTodoDateBucket(d, dateKey);
+  const plannerEvents = _ensurePlannerEventBucket(d, dateKey);
+  const selectedStillExists = todos.some(task => task.id === _plannerSelectedTodoId && _todoEffectiveProgress(task) < 100);
+  if (!selectedStillExists) _plannerSelectedTodoId = null;
+
+  document.getElementById('planner-date-picker').value = dateKey;
+  document.getElementById('planner-date-label').textContent = _todoDateLabel(dateKey);
+  document.getElementById('planner-timeline-title').textContent = `${_todoDateLabel(dateKey)} timeline`;
+
+  const activeTodos = todos.filter(task => _todoEffectiveProgress(task) < 100).sort((a,b) => {
+    if (!!a.startTime !== !!b.startTime) return a.startTime ? -1 : 1;
+    if (a.startTime && b.startTime) return a.startTime.localeCompare(b.startTime);
+    return ({h:0,m:1,l:2}[a.priority] ?? 1) - ({h:0,m:1,l:2}[b.priority] ?? 1);
+  });
+  document.getElementById('planner-todo-tray').innerHTML = activeTodos.length ? activeTodos.map(task => {
+    const progress = _todoEffectiveProgress(task);
+    const scheduled = task.startTime ? `${task.startTime}${task.endTime?'–'+task.endTime:''}` : 'Not scheduled';
+    return `<div class="planner-task${_plannerSelectedTodoId===task.id?' selected':''}" draggable="true" tabindex="0" role="button" aria-pressed="${_plannerSelectedTodoId===task.id}" onclick="selectPlannerTodo('${task.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlannerTodo('${task.id}')}" ondragstart="plannerDragStart(event,'${task.id}')" ondragend="plannerDragEnd(event)">
+      <span class="planner-task-grip">⠿</span>
+      <span class="planner-task-copy"><span class="planner-task-name">${escHtml(task.text || 'Untitled task')}</span><span class="planner-task-meta">${progress}% complete · ${escHtml(scheduled)}</span></span>
+      <span class="tp ${task.priority||'m'}">${{h:'High',m:'Med',l:'Low'}[task.priority]||'Med'}</span>
+    </div>`;
+  }).join('') : '<div class="planner-empty">No unfinished to-do items for this date.<br>Add tasks in the To-Do List, or create a planner-only event above.</div>';
+
+  const timeline = document.getElementById('planner-timeline');
+  const oldScroll = timeline.scrollTop;
+  const slots = [];
+  for (let hour = 0; hour < 24; hour++) {
+    const startTime = String(hour).padStart(2,'0') + ':00';
+    const todoEvents = todos.filter(task => task.startTime && parseInt(task.startTime.slice(0,2)) === hour);
+    const privateEvents = plannerEvents.filter(item => item.startTime && parseInt(item.startTime.slice(0,2)) === hour);
+    const cards = [
+      ...todoEvents.map(task => _plannerEventHtml(task,'todo')),
+      ...privateEvents.map(item => _plannerEventHtml(item,'private')),
+    ].join('');
+    const hint = !cards && _plannerSelectedTodoId ? '<div class="planner-drop-hint">Tap to place selected task here</div>' : '';
+    slots.push(`<div class="planner-slot"><div class="planner-time">${startTime}</div><div class="planner-dropzone" onclick="plannerSlotClick('${startTime}')" ondragover="plannerDragOver(event)" ondragleave="plannerDragLeave(event)" ondrop="plannerDrop(event,'${startTime}')">${cards}${hint}</div></div>`);
+  }
+  timeline.innerHTML = slots.join('');
+  if (timeline.dataset.ready) timeline.scrollTop = oldScroll;
+  else {
+    timeline.dataset.ready = 'true';
+    requestAnimationFrame(() => { timeline.scrollTop = 6 * 70; });
+  }
 }
 
 /* ═══════════════════════════════════════
@@ -5244,13 +5568,15 @@ function logDay() {
   if (!todos.length) return toast('No tasks to log for this date — add some tasks first');
 
   showConfirm(`Log ${_todoDateLabel(dateKey)}'s ${todos.length} task${todos.length!==1?'s':''} to history and clear this date's list?`, () => {
-    const completedCount = todos.filter(t => t.done).length;
+    const completedCount = todos.filter(t => _todoEffectiveProgress(t) >= 100).length;
     const skippedCount = todos.length - completedCount;
-    const completionPct = todos.length ? Math.round(completedCount/todos.length*100) : 0;
+    const completionPct = todos.length
+      ? Math.round(todos.reduce((sum, task) => sum + _todoEffectiveProgress(task), 0) / todos.length)
+      : 0;
     const entry = {
       id: _uid(),
       date: dateKey,
-      tasks: todos.map(t => ({ text:t.text, done:!!t.done, priority:t.priority||'m', progress:t.progress, startTime:t.startTime, endTime:t.endTime })),
+      tasks: todos.map(t => ({ text:t.text, done:_todoEffectiveProgress(t)>=100, priority:t.priority||'m', progress:_todoEffectiveProgress(t), startTime:t.startTime, endTime:t.endTime })),
       completedCount, skippedCount, completionPct
     };
     DB.update(d => {
@@ -5539,13 +5865,13 @@ function setConsistencyRange(range) {
 }
 
 function _consistencyPct(record) {
-  return record && record.total ? Math.round(record.done / record.total * 100) : null;
+  return record && record.total ? Math.round((record.progressSum || 0) / record.total) : null;
 }
 
 function _consistencyTaskRate(records) {
   const total = records.reduce((sum, record) => sum + (record.total || 0), 0);
-  const done = records.reduce((sum, record) => sum + (record.done || 0), 0);
-  return total ? Math.round(done / total * 100) : null;
+  const progressSum = records.reduce((sum, record) => sum + (record.progressSum || 0), 0);
+  return total ? Math.round(progressSum / total) : null;
 }
 
 function _consistencyColor(pct) {
@@ -5555,15 +5881,21 @@ function _consistencyColor(pct) {
 
 function _consistencyRecords(d) {
   const records = {};
-  const ensure = date => records[date] || (records[date] = { date, done:0, total:0, logged:false, live:false });
+  const ensure = date => records[date] || (records[date] = { date, done:0, total:0, progressSum:0, logged:false, live:false });
 
   (d.todoHistory || []).forEach(h => {
     if (!h || !h.date) return;
     const tasks = Array.isArray(h.tasks) ? h.tasks : [];
     const record = ensure(h.date);
     const fallbackTotal = (+h.completedCount || 0) + (+h.skippedCount || 0);
+    const fallbackPct = Number.isFinite(+h.completionPct)
+      ? Math.min(100, Math.max(0, +h.completionPct))
+      : (fallbackTotal ? Math.round((+h.completedCount || 0) / fallbackTotal * 100) : 0);
     record.total += tasks.length || fallbackTotal;
-    record.done += tasks.length ? tasks.filter(t => t && t.done).length : (+h.completedCount || 0);
+    record.done += tasks.length ? tasks.filter(t => _todoEffectiveProgress(t) >= 100).length : (+h.completedCount || 0);
+    record.progressSum += tasks.length
+      ? tasks.reduce((sum, task) => sum + _todoEffectiveProgress(task), 0)
+      : fallbackTotal * fallbackPct;
     record.logged = true;
   });
 
@@ -5571,7 +5903,8 @@ function _consistencyRecords(d) {
     if (!Array.isArray(tasks) || !tasks.length) return;
     const record = ensure(date);
     record.total += tasks.length;
-    record.done += tasks.filter(t => t && t.done).length;
+    record.done += tasks.filter(t => _todoEffectiveProgress(t) >= 100).length;
+    record.progressSum += tasks.reduce((sum, task) => sum + _todoEffectiveProgress(task), 0);
     record.live = true;
   });
 
@@ -5591,7 +5924,7 @@ function _consistencyDays(records, range) {
   const days = [];
   for (let offset = count - 1; offset >= 0; offset--) {
     const date = _consistencyDateKeyOffset(offset);
-    days.push(records[date] || { date, done:0, total:0, logged:false, live:false });
+    days.push(records[date] || { date, done:0, total:0, progressSum:0, logged:false, live:false });
   }
   return days;
 }
@@ -5618,19 +5951,90 @@ function _consistencyUnfinishedTasks(d, range) {
 
   (d.todoHistory || []).forEach(day => {
     if (!included(day?.date)) return;
-    (day.tasks || []).forEach(task => {
-      if (task && !task.done) tasks.push({ date:day.date, text:task.text || 'Untitled task', priority:task.priority || 'm', source:'Logged' });
+    (day.tasks || []).forEach((task, taskIndex) => {
+      const progress = _todoEffectiveProgress(task);
+      if (task && progress < 100) tasks.push({
+        kind:'history', ref:day.id || '', taskIndex, date:day.date,
+        text:task.text || 'Untitled task', priority:task.priority || 'm', progress, source:'Logged'
+      });
     });
   });
 
   Object.entries(d.todosByDate || {}).forEach(([date, dayTasks]) => {
     if (!included(date) || !Array.isArray(dayTasks)) return;
-    dayTasks.forEach(task => {
-      if (task && !task.done) tasks.push({ date, text:task.text || 'Untitled task', priority:task.priority || 'm', source:'Live' });
+    dayTasks.forEach((task, taskIndex) => {
+      _todoNormalize(date, task, taskIndex);
+      const progress = _todoEffectiveProgress(task);
+      if (task && progress < 100) tasks.push({
+        kind:'live', ref:task.id, taskIndex, date,
+        text:task.text || 'Untitled task', priority:task.priority || 'm', progress, source:'Live'
+      });
     });
   });
 
   return tasks.sort((a,b) => b.date.localeCompare(a.date) || a.text.localeCompare(b.text));
+}
+
+function _consistencyLocateTask(d, kind, date, ref, taskIndex) {
+  if (kind === 'live') {
+    const bucket = _getTodoDateBucket(d, date);
+    const index = bucket.findIndex(task => task && task.id === ref);
+    return index >= 0 ? { task:bucket[index], bucket, index, entry:null } : null;
+  }
+  const entry = (d.todoHistory || []).find(day => day && ((ref && day.id === ref) || (!ref && day.date === date)));
+  const index = Math.max(0, parseInt(taskIndex) || 0);
+  return entry && Array.isArray(entry.tasks) && entry.tasks[index]
+    ? { task:entry.tasks[index], bucket:entry.tasks, index, entry }
+    : null;
+}
+
+function consistencyToggleTask(kind, date, ref, taskIndex) {
+  DB.update(d => {
+    _todoHistoryMigrate(d);
+    const located = _consistencyLocateTask(d, kind, date, ref, taskIndex);
+    if (!located) return;
+    const completing = _todoEffectiveProgress(located.task) < 100;
+    located.task.done = completing;
+    located.task.progress = completing ? 100 : 0;
+    located.task.updatedAt = _nowIso();
+    if (located.entry) _refreshTodoHistoryEntry(located.entry);
+  });
+  renderConsistency();
+}
+
+function consistencyUpdateTaskProgress(kind, date, ref, taskIndex, value) {
+  const progress = Math.min(100, Math.max(0, parseInt(value) || 0));
+  DB.update(d => {
+    _todoHistoryMigrate(d);
+    const located = _consistencyLocateTask(d, kind, date, ref, taskIndex);
+    if (!located) return;
+    located.task.progress = progress;
+    located.task.done = progress >= 100;
+    located.task.updatedAt = _nowIso();
+    if (located.entry) _refreshTodoHistoryEntry(located.entry);
+  });
+  renderConsistency();
+}
+
+function consistencyDeleteTask(kind, date, ref, taskIndex) {
+  showConfirm('Remove this task entirely?', () => {
+    DB.update(d => {
+      _todoHistoryMigrate(d);
+      const located = _consistencyLocateTask(d, kind, date, ref, taskIndex);
+      if (!located) return;
+      const [removed] = located.bucket.splice(located.index, 1);
+      if (kind === 'live' && removed?.id) {
+        if (!Array.isArray(d.todosDeleted[date])) d.todosDeleted[date] = [];
+        d.todosDeleted[date].push({ id:removed.id, updatedAt:_nowIso() });
+      }
+      if (located.entry) {
+        if (!located.entry.tasks.length) d.todoHistory = d.todoHistory.filter(day => day !== located.entry);
+        else _refreshTodoHistoryEntry(located.entry);
+      }
+    });
+    toast('Task removed','ok');
+    renderConsistency();
+  });
 }
 
 function renderConsistency() {
@@ -5640,8 +6044,7 @@ function renderConsistency() {
   const days = _consistencyDays(records, _consistencyRange);
   const trackedDays = days.filter(day => day.total > 0);
   const totalTasks = trackedDays.reduce((sum, day) => sum + day.total, 0);
-  const totalDone = trackedDays.reduce((sum, day) => sum + day.done, 0);
-  const completionRate = totalTasks ? Math.round(totalDone / totalTasks * 100) : 0;
+  const completionRate = _consistencyTaskRate(trackedDays) ?? 0;
   const dailyAverage = trackedDays.length
     ? Math.round(trackedDays.reduce((sum, day) => sum + _consistencyPct(day), 0) / trackedDays.length)
     : 0;
@@ -5714,7 +6117,7 @@ function renderConsistency() {
         tooltip: { callbacks: { label: context => {
           const day = chartDays[context.dataIndex];
           const pct = _consistencyPct(day);
-          return pct == null ? 'No tasks planned' : `${day.done} of ${day.total} tasks completed (${pct}%)`;
+          return pct == null ? 'No tasks planned' : `${day.done} of ${day.total} fully completed · ${pct}% overall progress`;
         } } }
       },
       scales: {
@@ -5752,13 +6155,25 @@ function renderConsistency() {
 
   const unfinishedList = document.getElementById('consistency-unfinished-list');
   const priorityLabel = { h:'High', m:'Medium', l:'Low' };
-  unfinishedList.innerHTML = unfinishedTasks.length ? unfinishedTasks.map(task => `
-    <div class="consistency-missed-row">
-      <span style="color:#f87171">○</span>
-      <span class="consistency-missed-name">${escHtml(task.text)}</span>
-      <span class="tp ${task.priority}">${priorityLabel[task.priority] || 'Medium'}</span>
-      <span class="consistency-missed-meta">${fmtDate(task.date)} · ${task.source}</span>
-    </div>`).join('') : '<div class="empty">No unfinished tasks in this period — nice work.</div>';
+  unfinishedList.innerHTML = unfinishedTasks.length ? unfinishedTasks.map(task => {
+    const color = todoProgColor(task.progress);
+    return `<div class="consistency-missed-row">
+      <div class="consistency-missed-main">
+        <button class="tc" title="Mark complete" onclick="consistencyToggleTask('${task.kind}','${task.date}','${task.ref}',${task.taskIndex})"></button>
+        <span class="consistency-missed-name">${escHtml(task.text)}</span>
+        <span class="tp ${task.priority}">${priorityLabel[task.priority] || 'Medium'}</span>
+        <span class="consistency-missed-meta">${fmtDate(task.date)} · ${task.source}</span>
+        <button class="db" title="Remove task entirely" onclick="consistencyDeleteTask('${task.kind}','${task.date}','${task.ref}',${task.taskIndex})">✕</button>
+      </div>
+      <div class="consistency-missed-progress">
+        <input class="tprog-range" type="range" min="0" max="100" value="${task.progress}"
+          style="background:linear-gradient(to right, ${color} 0%, ${color} ${task.progress}%, rgba(255,255,255,.12) ${task.progress}%, rgba(255,255,255,.12) 100%)"
+          oninput="this.nextElementSibling.textContent=this.value+'%';this.nextElementSibling.style.color=todoProgColor(this.value);this.style.background='linear-gradient(to right, '+todoProgColor(this.value)+' 0%, '+todoProgColor(this.value)+' '+this.value+'%, rgba(255,255,255,.12) '+this.value+'%, rgba(255,255,255,.12) 100%)'"
+          onchange="consistencyUpdateTaskProgress('${task.kind}','${task.date}','${task.ref}',${task.taskIndex},this.value)" title="Drag to update progress">
+        <span class="tprog-pct" style="color:${color}">${task.progress}%</span>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty">No unfinished tasks in this period — nice work.</div>';
 }
 
 /* CALORIE TRACKER PAGE (retired UI retained below) */
@@ -6295,6 +6710,7 @@ function _renderActivePageAfterCloudUpdate() {
   const renderers = {
     goals:renderGoals,
     todo:renderTodo,
+    planner:renderPlanner,
     consistency:renderConsistency,
     notes:renderNotes,
     /* Retired feature renderers retained for easy restoration:

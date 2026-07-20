@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "convex:dev": "convex dev",
-    "convex:check": "convex dev --once"
+    "convex:check": "convex dev --once",
+    "test": "node scripts/test-ui-logic.mjs"
   },
   "dependencies": {
     "convex": "^1.42.1"
