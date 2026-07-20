@@ -6,6 +6,10 @@ const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 assert.match(html, /id="planner-schedule-overlay"/, 'planner scheduling dialog should exist');
 assert.match(html, /id="planner-schedule-start"/, 'planner scheduling dialog should ask for a start time');
 assert.match(html, /id="planner-schedule-end"/, 'planner scheduling dialog should ask for an end time');
+assert.match(html, /function plannerPointerStart/, 'mobile pointer dragging should be implemented');
+assert.match(html, />Set time<\//, 'mobile planner should provide a direct scheduling fallback');
+assert.match(html, /toggleTodoLock/, 'to-do items should expose a lock control');
+assert.match(html, /togglePlannerItemLock/, 'planner items should expose a lock control');
 const inlineScript = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
   .find(source => source.includes('const DB ='));
@@ -99,6 +103,34 @@ const tests = `
   schedulePlannerTodo('scheduled-1', '08:15', '09:45', dateKey);
   assert.equal(scheduleData.todosByDate[dateKey][0].startTime, '08:15');
   assert.equal(scheduleData.todosByDate[dateKey][0].endTime, '09:45');
+
+  const lockedData = DB.defaults();
+  lockedData.todosByDate[dateKey] = [{ id:'daily-task', text:'Read', priority:'h', progress:65, done:false }];
+  assert.equal(_toggleTodoLockInData(lockedData, lockedData.todosByDate[dateKey][0]), true);
+  assert.equal(lockedData.lockedTodoTemplates.length, 1);
+  DB.get = () => lockedData;
+  DB.update = callback => { callback(lockedData); return lockedData; };
+  schedulePlannerTodo('daily-task', '07:00', '08:20', dateKey);
+  assert.equal(lockedData.lockedTodoTemplates[0].startTime, '07:00');
+  assert.equal(lockedData.lockedTodoTemplates[0].endTime, '08:20');
+  const nextDate = _dateKey(new Date(Date.now() + 86400000));
+  _materializeLockedDaily(lockedData, nextDate);
+  const repeatedTask = lockedData.todosByDate[nextDate][0];
+  assert.equal(repeatedTask.text, 'Read');
+  assert.equal(repeatedTask.locked, true);
+  assert.equal(repeatedTask.progress, 0);
+  assert.equal(repeatedTask.endTime, '08:20');
+
+  lockedData.plannerEventsByDate[dateKey] = [{ id:'daily-event', text:'Gym', startTime:'06:00', endTime:'07:30' }];
+  assert.equal(_togglePlannerLockInData(lockedData, lockedData.plannerEventsByDate[dateKey][0]), true);
+  const thirdDate = _dateKey(new Date(Date.now() + 172800000));
+  _materializeLockedDaily(lockedData, thirdDate);
+  assert.equal(lockedData.plannerEventsByDate[thirdDate][0].text, 'Gym');
+  assert.equal(lockedData.plannerEventsByDate[thirdDate][0].locked, true);
+
+  assert.equal(_toggleTodoLockInData(lockedData, repeatedTask), false);
+  assert.equal(lockedData.lockedTodoTemplates.length, 0);
+  assert.equal(lockedData.todosByDate[dateKey][0].locked, false);
 `;
 
 const sourceWithoutInit = inlineScript.replace(/\ninitApp\(\);\s*$/, '');

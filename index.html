@@ -274,6 +274,9 @@ nav::-webkit-scrollbar{height:0}
 .tbl tr:hover td{background:rgba(var(--accent-rgb),.04)}
 .db{background:none;border:none;color:rgba(255,255,255,.18);cursor:pointer;font-size:14px;transition:color .2s}
 .db:hover{color:var(--warn)}
+.lock-btn{width:25px;height:25px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;border-radius:7px;border:1px solid transparent;background:none;color:var(--t3);cursor:pointer;transition:var(--tr)}
+.lock-btn:hover{color:var(--accent-2);background:rgba(var(--accent-rgb),.09);border-color:rgba(var(--accent-rgb),.2)}
+.lock-btn.on{color:var(--accent-2);background:rgba(var(--accent-rgb),.16);border-color:rgba(var(--accent-rgb),.34)}
 .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:11px;margin-bottom:15px}
 .gc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px}
 .gc h4{font-size:13.5px;font-weight:600;margin-bottom:3px}
@@ -671,8 +674,11 @@ nav::-webkit-scrollbar{height:0}
 .planner-task-copy{display:flex;flex:1;min-width:0;overflow:hidden;flex-direction:column}
 .planner-task-name{display:-webkit-box;font-size:12.5px;font-weight:650;line-height:1.38;color:var(--t1);overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere}
 .planner-task-meta{display:block;font-size:10.5px;line-height:1.35;color:var(--t3);margin-top:5px;overflow-wrap:anywhere}
-.planner-task-grip{color:var(--t3);font-size:14px;line-height:1.4;letter-spacing:-2px;flex:0 0 auto}
+.planner-task-grip{width:26px;height:30px;display:inline-flex;align-items:center;justify-content:center;color:var(--t3);font-size:17px;line-height:1;letter-spacing:-2px;flex:0 0 auto;cursor:grab;touch-action:none;border-radius:7px}
+.planner-task-grip:active{cursor:grabbing;background:rgba(var(--accent-rgb),.14);color:var(--accent-2)}
 .planner-task .tp{flex:0 0 auto;margin-top:1px}
+.planner-task-actions{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.planner-mobile-schedule{display:none;border:1px solid rgba(var(--accent-rgb),.28);background:rgba(var(--accent-rgb),.1);color:var(--accent-2);border-radius:7px;padding:5px 8px;font:700 10.5px var(--font-ui);cursor:pointer}
 .planner-timeline{flex:1;max-height:620px;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable}
 .planner-timeline-grid{position:relative;min-width:0}
 .planner-slot{display:grid;grid-template-columns:70px minmax(0,1fr);height:56px;border-bottom:1px solid var(--border)}
@@ -692,11 +698,25 @@ nav::-webkit-scrollbar{height:0}
 .planner-event-kind{font-size:9.5px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
 .planner-event .db{flex-shrink:0}
 .planner-empty{padding:22px 14px;text-align:center;color:var(--t3);font-size:12px;line-height:1.55}
+.planner-drag-ghost{position:fixed;z-index:5000;pointer-events:none;opacity:.92;transform:translate(-18px,-18px);box-shadow:0 18px 45px rgba(0,0,0,.5);background:var(--surface)}
 @media(max-width:760px){
   .planner-layout{grid-template-columns:1fr}
-  .planner-tray{max-height:280px}
+  .planner-panel-head{padding:14px}
+  .planner-panel-head h3{font-size:15px}
+  .planner-panel-head p{font-size:12.5px}
+  .planner-tray{max-height:330px;padding:9px}
   .planner-timeline{max-height:620px}
   .planner-datebar .fg{max-width:none}
+  .planner-date-title{min-width:100%;font-size:15px}
+  .planner-task{padding:12px 10px;gap:8px}
+  .planner-task-name{font-size:14px;line-height:1.4}
+  .planner-task-meta{font-size:11.5px}
+  .planner-task-grip{width:32px;height:36px;font-size:20px}
+  .planner-task-actions{flex-direction:column;align-items:flex-end}
+  .planner-mobile-schedule{display:inline-flex;font-size:11px;padding:6px 9px}
+  .planner-event-name{font-size:13.5px}
+  .planner-event-kind{font-size:10px}
+  .planner-time{font-size:11px}
 }
 @media(max-width:520px){
   .planner-slot{grid-template-columns:56px minmax(0,1fr)}
@@ -1798,7 +1818,7 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
 
     <div class="planner-layout">
       <aside class="planner-panel">
-        <div class="planner-panel-head"><h3>Daily To-Do Items</h3><p>Drag a task to a time slot. On touch screens, tap a task and then tap a slot.</p></div>
+        <div class="planner-panel-head"><h3>Daily To-Do Items</h3><p>Drag using the grip, tap a task then a slot, or use Set time on mobile.</p></div>
         <div class="planner-tray" id="planner-todo-tray"></div>
       </aside>
       <section class="planner-panel">
@@ -2183,6 +2203,8 @@ const DB = {
       todosDeleted:       {},
       todoHistory:        [],
       plannerEventsByDate:{},
+      lockedTodoTemplates:[],
+      lockedPlannerTemplates:[],
       notes:              [],
       folders:            [],
       notesDeleted:       [],
@@ -5190,6 +5212,90 @@ function _todoHistoryMigrate(d) {
   });
 }
 
+function _lockedDailyMigrate(d) {
+  if (!Array.isArray(d.lockedTodoTemplates)) d.lockedTodoTemplates = [];
+  if (!Array.isArray(d.lockedPlannerTemplates)) d.lockedPlannerTemplates = [];
+}
+
+function _lockedDailyId(prefix, templateId, dateKey) {
+  return `${prefix}_${templateId}_${dateKey.replaceAll('-','')}`;
+}
+
+function _materializeLockedDaily(d, dateKey) {
+  _lockedDailyMigrate(d);
+  const dayAlreadyLogged = (d.todoHistory || []).some(day => day?.date === dateKey);
+  if (!dayAlreadyLogged) {
+    const todos = _ensureTodoDateBucket(d, dateKey);
+    d.lockedTodoTemplates.forEach(template => {
+      const existing = todos.find(task => task?.templateId === template.id);
+      if (existing) { existing.locked = true; return; }
+      todos.push({
+        id:_lockedDailyId('ltd', template.id, dateKey), templateId:template.id, locked:true,
+        text:template.text, startTime:template.startTime || '', endTime:template.endTime || '',
+        priority:template.priority || 'm', progress:0, done:false, createdAt:dateKey,
+        updatedAt:template.updatedAt || '2000-01-01T00:00:00.000Z'
+      });
+    });
+  }
+
+  const events = _ensurePlannerEventBucket(d, dateKey);
+  d.lockedPlannerTemplates.forEach(template => {
+    const existing = events.find(event => event?.templateId === template.id);
+    if (existing) { existing.locked = true; return; }
+    events.push({
+      id:_lockedDailyId('lpe', template.id, dateKey), templateId:template.id, locked:true,
+      text:template.text, startTime:template.startTime, endTime:template.endTime,
+      createdAt:template.createdAt || _nowIso(), updatedAt:template.updatedAt || _nowIso()
+    });
+  });
+}
+
+function _toggleTodoLockInData(d, task) {
+  _lockedDailyMigrate(d);
+  if (task.locked) {
+    const templateId = task.templateId;
+    d.lockedTodoTemplates = d.lockedTodoTemplates.filter(template => template.id !== templateId);
+    Object.values(d.todosByDate || {}).forEach(bucket => (bucket || []).forEach(item => {
+      if (item?.templateId === templateId) { item.locked = false; delete item.templateId; item.updatedAt = _nowIso(); }
+    }));
+    return false;
+  }
+  const templateId = _uid();
+  task.locked = true;
+  task.templateId = templateId;
+  task.updatedAt = _nowIso();
+  d.lockedTodoTemplates.push({
+    id:templateId, text:task.text, startTime:task.startTime || '', endTime:task.endTime || '',
+    priority:task.priority || 'm', updatedAt:task.updatedAt
+  });
+  return true;
+}
+
+function _togglePlannerLockInData(d, event) {
+  _lockedDailyMigrate(d);
+  if (event.locked) {
+    const templateId = event.templateId;
+    d.lockedPlannerTemplates = d.lockedPlannerTemplates.filter(template => template.id !== templateId);
+    Object.values(d.plannerEventsByDate || {}).forEach(bucket => (bucket || []).forEach(item => {
+      if (item?.templateId === templateId) { item.locked = false; delete item.templateId; item.updatedAt = _nowIso(); }
+    }));
+    return false;
+  }
+  const templateId = _uid();
+  event.locked = true;
+  event.templateId = templateId;
+  event.updatedAt = _nowIso();
+  d.lockedPlannerTemplates.push({
+    id:templateId, text:event.text, startTime:event.startTime, endTime:event.endTime,
+    createdAt:event.createdAt || _nowIso(), updatedAt:event.updatedAt
+  });
+  return true;
+}
+
+function _lockIcon(locked) {
+  return `<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="${locked?'M8 10V7a4 4 0 0 1 8 0v3':'M8 10V7a4 4 0 0 1 7.7-1.4'}"/></svg>`;
+}
+
 function _selectedTodoDate(d) { return d.selectedTodoDate || today(); }
 function _ensureTodoDateBucket(d, dateKey) {
   if (!d.todosByDate || typeof d.todosByDate !== 'object') d.todosByDate = {};
@@ -5247,7 +5353,10 @@ function _todoDateLabel(dateKey) {
 }
 
 function renderTodo() {
-  DB.update(d => _todoHistoryMigrate(d));
+  DB.update(d => {
+    _todoHistoryMigrate(d);
+    _materializeLockedDaily(d, _selectedTodoDate(d));
+  });
   const d = DB.get();
   const dateKey = _selectedTodoDate(d);
   const todos = _getTodoDateBucket(d, dateKey);
@@ -5287,9 +5396,10 @@ function renderTodo() {
             <button class="tc${t.done?' on':''}" onclick="toggleTodo(${orig})">
               ${t.done?'<svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}
             </button>
-            <div class="tt${t.done?' done':''}">${t.text}</div>
+            <div class="tt${t.done?' done':''}">${escHtml(t.text)}</div>
             ${timeStr ? `<div class="ttime">${timeStr}</div>` : ''}
             <div class="tp ${t.priority||'m'}">${{h:'High',m:'Med',l:'Low'}[t.priority]||'Med'}</div>
+            <button class="lock-btn${t.locked?' on':''}" title="${t.locked?'Unlock daily task':'Keep this task every day'}" onclick="toggleTodoLock(${orig})">${_lockIcon(!!t.locked)}</button>
             <button class="db" onclick="deleteTodo(${orig})">✕</button>
           </div>
           <div class="tprog">
@@ -5341,10 +5451,22 @@ function toggleTodo(i) {
   renderTodo();
 }
 
+function toggleTodoLock(i) {
+  const dateKey = _selectedTodoDate(DB.get());
+  let locked = false;
+  DB.update(d => {
+    const task = _ensureTodoDateBucket(d, dateKey)[i];
+    if (task) locked = _toggleTodoLockInData(d, task);
+  });
+  toast(locked ? 'Task locked to every day' : 'Task unlocked','ok');
+  renderTodo();
+}
+
 function deleteTodo(i) {
+  const dateKey = _selectedTodoDate(DB.get());
+  const currentTask = _getTodoDateBucket(DB.get(), dateKey)[i];
+  if (currentTask?.locked) return toast('Unlock this daily task before deleting it');
   showConfirm('Are you sure?', () => {
-    const d0 = DB.get();
-    const dateKey = _selectedTodoDate(d0);
     DB.update(d => {
       const bucket = _ensureTodoDateBucket(d, dateKey);
       const [removed] = bucket.splice(i,1);
@@ -5378,10 +5500,13 @@ function updateTodoProgress(orig, val) {
    Planner-only events live separately so routines never inflate task totals. */
 let _plannerSelectedTodoId = null;
 let _plannerPendingSchedule = null;
+let _plannerPointerDrag = null;
+let _plannerPointerWasDrag = false;
 const PLANNER_HOUR_HEIGHT = 56;
 
 function _plannerMigrate(d) {
   _todoHistoryMigrate(d);
+  _lockedDailyMigrate(d);
   if (!d.plannerEventsByDate || typeof d.plannerEventsByDate !== 'object') d.plannerEventsByDate = {};
 }
 
@@ -5426,6 +5551,7 @@ function openPlannerSchedule(id, suggestedStart) {
   const dateKey = _selectedTodoDate(d);
   const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
   if (!task || _todoEffectiveProgress(task) >= 100) return;
+  if (task.locked && task.startTime) return toast('Unlock this daily task before changing its time');
   const startTime = suggestedStart || task.startTime || '';
   _plannerPendingSchedule = { id, dateKey };
   document.getElementById('planner-schedule-task').textContent = task.text || 'Untitled task';
@@ -5493,8 +5619,10 @@ function addPlannerEvent() {
 }
 
 function deletePlannerEvent(id) {
+  const dateKey = _selectedTodoDate(DB.get());
+  const currentEvent = _ensurePlannerEventBucket(DB.get(), dateKey).find(event => event.id === id);
+  if (currentEvent?.locked) return toast('Unlock this daily event before deleting it');
   showConfirm('Remove this planner-only event?', () => {
-    const dateKey = _selectedTodoDate(DB.get());
     DB.update(d => {
       const events = _ensurePlannerEventBucket(d, dateKey);
       d.plannerEventsByDate[dateKey] = events.filter(event => event.id !== id);
@@ -5503,12 +5631,34 @@ function deletePlannerEvent(id) {
   });
 }
 
+function togglePlannerItemLock(kind, id) {
+  const dateKey = _selectedTodoDate(DB.get());
+  let locked = false;
+  DB.update(d => {
+    if (kind === 'todo') {
+      const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
+      if (task) locked = _toggleTodoLockInData(d, task);
+    } else {
+      const event = _ensurePlannerEventBucket(d, dateKey).find(item => item.id === id);
+      if (event) locked = _togglePlannerLockInData(d, event);
+    }
+  });
+  toast(locked ? 'Locked to your daily plan' : 'Item unlocked','ok');
+  renderPlanner();
+}
+
 function selectPlannerTodo(id) {
   _plannerSelectedTodoId = _plannerSelectedTodoId === id ? null : id;
   renderPlanner();
 }
 
 function plannerDragStart(event, id) {
+  const dateKey = _selectedTodoDate(DB.get());
+  const task = _getTodoDateBucket(DB.get(), dateKey).find(item => item.id === id);
+  if (task?.locked && task.startTime) {
+    event.preventDefault();
+    return toast('Unlock this daily task before moving it');
+  }
   _plannerSelectedTodoId = id;
   event.currentTarget.classList.add('dragging');
   event.dataTransfer.effectAllowed = 'move';
@@ -5518,6 +5668,101 @@ function plannerDragStart(event, id) {
 function plannerDragEnd(event) {
   event.currentTarget.classList.remove('dragging');
   document.querySelectorAll('.planner-dropzone.drag-over').forEach(slot => slot.classList.remove('drag-over'));
+}
+
+function plannerTaskClick(event, id) {
+  if (_plannerPointerWasDrag) {
+    event.preventDefault();
+    event.stopPropagation();
+    _plannerPointerWasDrag = false;
+    return;
+  }
+  selectPlannerTodo(id);
+}
+
+function plannerPointerStart(event, id) {
+  if (event.pointerType === 'mouse') return;
+  event.preventDefault();
+  event.stopPropagation();
+  const dateKey = _selectedTodoDate(DB.get());
+  const task = _getTodoDateBucket(DB.get(), dateKey).find(item => item.id === id);
+  if (task?.locked && task.startTime) return toast('Unlock this daily task before moving it');
+  const handle = event.currentTarget;
+  const source = handle.closest('.planner-task');
+  if (!source) return;
+  handle.setPointerCapture?.(event.pointerId);
+  const ghost = source.cloneNode(true);
+  const rect = source.getBoundingClientRect();
+  ghost.classList.add('planner-drag-ghost');
+  ghost.classList.remove('selected');
+  ghost.style.width = Math.min(rect.width, window.innerWidth - 24) + 'px';
+  ghost.style.left = event.clientX + 'px';
+  ghost.style.top = event.clientY + 'px';
+  document.body.appendChild(ghost);
+  source.classList.add('dragging');
+  _plannerSelectedTodoId = id;
+  _plannerPointerDrag = { id, pointerId:event.pointerId, handle, source, ghost, over:null };
+  handle.onpointermove = plannerPointerMove;
+  handle.onpointerup = plannerPointerEnd;
+  handle.onpointercancel = plannerPointerCancel;
+}
+
+function plannerPointerMove(event) {
+  const drag = _plannerPointerDrag;
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  event.preventDefault();
+  drag.ghost.style.left = event.clientX + 'px';
+  drag.ghost.style.top = event.clientY + 'px';
+  const target = document.elementFromPoint(event.clientX, event.clientY);
+  let zone = target?.closest?.('.planner-dropzone') || null;
+  if (!zone) {
+    const grid = target?.closest?.('.planner-timeline-grid');
+    if (grid) {
+      const hour = Math.max(0, Math.min(23, Math.floor((event.clientY - grid.getBoundingClientRect().top) / PLANNER_HOUR_HEIGHT)));
+      zone = grid.querySelector(`[data-planner-time="${String(hour).padStart(2,'0')}:00"]`);
+    }
+  }
+  if (drag.over !== zone) {
+    drag.over?.classList.remove('drag-over');
+    zone?.classList.add('drag-over');
+    drag.over = zone;
+  }
+}
+
+function _plannerPointerCleanup() {
+  const drag = _plannerPointerDrag;
+  if (!drag) return null;
+  drag.over?.classList.remove('drag-over');
+  drag.source?.classList.remove('dragging');
+  drag.ghost?.remove();
+  if (drag.handle) {
+    drag.handle.onpointermove = null;
+    drag.handle.onpointerup = null;
+    drag.handle.onpointercancel = null;
+  }
+  _plannerPointerDrag = null;
+  return drag;
+}
+
+function plannerPointerEnd(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  const drag = _plannerPointerCleanup();
+  if (!drag) return;
+  _plannerPointerWasDrag = true;
+  setTimeout(() => { _plannerPointerWasDrag = false; }, 250);
+  const startTime = drag.over?.dataset?.plannerTime;
+  if (startTime) openPlannerSchedule(drag.id, startTime);
+  else {
+    _plannerSelectedTodoId = drag.id;
+    renderPlanner();
+  }
+}
+
+function plannerPointerCancel(event) {
+  event.preventDefault();
+  const drag = _plannerPointerCleanup();
+  if (drag) _plannerSelectedTodoId = null;
 }
 
 function plannerDragOver(event) {
@@ -5551,6 +5796,10 @@ function schedulePlannerTodo(id, startTime, endTime, dateKey = _selectedTodoDate
     task.startTime = startTime;
     task.endTime = endTime;
     task.updatedAt = _nowIso();
+    if (task.locked && task.templateId) {
+      const template = (d.lockedTodoTemplates || []).find(item => item.id === task.templateId);
+      if (template) { template.startTime = startTime; template.endTime = endTime; template.updatedAt = task.updatedAt; }
+    }
     found = true;
   });
   _plannerSelectedTodoId = null;
@@ -5560,6 +5809,8 @@ function schedulePlannerTodo(id, startTime, endTime, dateKey = _selectedTodoDate
 
 function unschedulePlannerTodo(id) {
   const dateKey = _selectedTodoDate(DB.get());
+  const currentTask = _getTodoDateBucket(DB.get(), dateKey).find(item => item.id === id);
+  if (currentTask?.locked) return toast('Unlock this daily task before removing it from the timeline');
   DB.update(d => {
     const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
     if (!task) return;
@@ -5592,14 +5843,18 @@ function _plannerEventHtml(event, kind) {
   return `<div class="planner-event planner-event-positioned${isTodo?'':' private'}${done?' done':''}" style="top:${position.top}px;height:${position.height}px" onclick="event.stopPropagation()">
     ${isTodo ? `<button class="tc${done?' on':''}" title="${done?'Mark unfinished':'Complete task'}" onclick="event.stopPropagation();plannerToggleTodo('${event.id}')">${done?'<svg width="10" height="10" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</button>` : ''}
     <span class="planner-event-time">${escHtml(time)}</span>
-    <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span><span class="planner-event-kind">${isTodo?'To-do item':'Planner only'}</span></span>
+    <span class="planner-event-copy"><span class="planner-event-name">${escHtml(event.text || 'Untitled')}</span><span class="planner-event-kind">${event.locked?'Locked daily · ':''}${isTodo?'To-do item':'Planner only'}</span></span>
+    <button class="lock-btn${event.locked?' on':''}" title="${event.locked?'Unlock daily item':'Keep this item every day'}" onclick="event.stopPropagation();togglePlannerItemLock('${kind}','${event.id}')">${_lockIcon(!!event.locked)}</button>
     <button class="db" title="${isTodo?'Remove from timeline':'Delete event'}" onclick="event.stopPropagation();${isTodo?`unschedulePlannerTodo('${event.id}')`:`deletePlannerEvent('${event.id}')`}">✕</button>
   </div>`;
 }
 
 function renderPlanner() {
+  DB.update(d => {
+    _plannerMigrate(d);
+    _materializeLockedDaily(d, _selectedTodoDate(d));
+  });
   const d = DB.get();
-  _plannerMigrate(d);
   const dateKey = _selectedTodoDate(d);
   const todos = _getTodoDateBucket(d, dateKey);
   const plannerEvents = _ensurePlannerEventBucket(d, dateKey);
@@ -5622,10 +5877,14 @@ function renderPlanner() {
   document.getElementById('planner-todo-tray').innerHTML = activeTodos.length ? activeTodos.map(task => {
     const progress = _todoEffectiveProgress(task);
     const scheduled = task.startTime ? `${task.startTime}${task.endTime?'–'+task.endTime:''}` : 'Not scheduled';
-    return `<div class="planner-task${_plannerSelectedTodoId===task.id?' selected':''}" draggable="true" tabindex="0" role="button" aria-pressed="${_plannerSelectedTodoId===task.id}" onclick="selectPlannerTodo('${task.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlannerTodo('${task.id}')}" ondragstart="plannerDragStart(event,'${task.id}')" ondragend="plannerDragEnd(event)">
-      <span class="planner-task-grip">⠿</span>
+    return `<div class="planner-task${_plannerSelectedTodoId===task.id?' selected':''}" draggable="${task.locked&&task.startTime?'false':'true'}" tabindex="0" role="button" aria-pressed="${_plannerSelectedTodoId===task.id}" onclick="plannerTaskClick(event,'${task.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectPlannerTodo('${task.id}')}" ondragstart="plannerDragStart(event,'${task.id}')" ondragend="plannerDragEnd(event)">
+      <span class="planner-task-grip" title="Drag to the timeline" onpointerdown="plannerPointerStart(event,'${task.id}')">⠿</span>
       <span class="planner-task-copy"><span class="planner-task-name">${escHtml(task.text || 'Untitled task')}</span><span class="planner-task-meta">${progress}% complete · ${escHtml(scheduled)}</span></span>
-      <span class="tp ${task.priority||'m'}">${{h:'High',m:'Med',l:'Low'}[task.priority]||'Med'}</span>
+      <span class="planner-task-actions">
+        <span class="tp ${task.priority||'m'}">${{h:'High',m:'Med',l:'Low'}[task.priority]||'Med'}</span>
+        <button class="lock-btn${task.locked?' on':''}" title="${task.locked?'Unlock daily task':'Keep this task every day'}" onclick="event.stopPropagation();togglePlannerItemLock('todo','${task.id}')">${_lockIcon(!!task.locked)}</button>
+        <button class="planner-mobile-schedule" onclick="event.stopPropagation();openPlannerSchedule('${task.id}','')">Set time</button>
+      </span>
     </div>`;
   }).join('') : '<div class="planner-empty">No unfinished to-do items for this date.<br>Add tasks in the To-Do List, or create a planner-only event above.</div>';
 
@@ -5634,7 +5893,7 @@ function renderPlanner() {
   const slots = [];
   for (let hour = 0; hour < 24; hour++) {
     const startTime = String(hour).padStart(2,'0') + ':00';
-    slots.push(`<div class="planner-slot"><div class="planner-time">${startTime}</div><div class="planner-dropzone" onclick="plannerSlotClick('${startTime}')" ondragover="plannerDragOver(event)" ondragleave="plannerDragLeave(event)" ondrop="plannerDrop(event,'${startTime}')"></div></div>`);
+    slots.push(`<div class="planner-slot"><div class="planner-time">${startTime}</div><div class="planner-dropzone" data-planner-time="${startTime}" onclick="plannerSlotClick('${startTime}')" ondragover="plannerDragOver(event)" ondragleave="plannerDragLeave(event)" ondrop="plannerDrop(event,'${startTime}')"></div></div>`);
   }
   const eventCards = [
     ...todos.filter(task => task.startTime).map(task => _plannerEventHtml(task,'todo')),
@@ -6109,6 +6368,8 @@ function consistencyUpdateTaskProgress(kind, date, ref, taskIndex, value) {
 }
 
 function consistencyDeleteTask(kind, date, ref, taskIndex) {
+  const current = _consistencyLocateTask(DB.get(), kind, date, ref, taskIndex);
+  if (current?.task?.locked) return toast('Unlock this daily task before deleting it');
   showConfirm('Remove this task entirely?', () => {
     DB.update(d => {
       _todoHistoryMigrate(d);
@@ -6130,8 +6391,11 @@ function consistencyDeleteTask(kind, date, ref, taskIndex) {
 }
 
 function renderConsistency() {
+  DB.update(d => {
+    _todoHistoryMigrate(d);
+    _materializeLockedDaily(d, today());
+  });
   const d = DB.get();
-  _todoHistoryMigrate(d);
   const records = _consistencyRecords(d);
   const days = _consistencyDays(records, _consistencyRange);
   const trackedDays = days.filter(day => day.total > 0);
