@@ -883,11 +883,11 @@ h1,h2,h3,h4,.hero-title,.sph h1,.fin-shead,.modal h2,.setup-s-title,.auth-logo,.
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#303438;border-radius:99px}
 
 /* Navigation */
-nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(22px) saturate(1.2);gap:4px}
-.nav-logo{font-size:17px;gap:10px;margin-right:18px}
+nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,260px);background:rgba(10,10,11,.9);border-bottom:1px solid var(--border);backdrop-filter:blur(22px) saturate(1.2);gap:8px;overflow-x:hidden}
+.nav-logo{font-size:17px;gap:10px;margin-right:clamp(12px,2vw,30px);flex:0 0 auto}
 .nav-logo svg,.auth-logo svg{display:none}
 .nav-logo::before,.auth-logo::before{content:'';display:inline-block;width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--accent-2),var(--accent-ink));box-shadow:0 0 28px -8px var(--accent);flex:0 0 auto}
-.nbtn{padding:8px 12px;border-radius:999px;color:var(--t2);font-size:12.5px}
+.nbtn{flex:1 1 0;min-width:0;justify-content:center;padding:9px 12px;border-radius:999px;color:var(--t2);font-size:12.5px}
 .nbtn:hover{color:var(--t1);background:var(--fill-2)}
 .nbtn.active{color:#fff;background:var(--accent)}
 .nbtn.active svg{color:#fff}
@@ -961,8 +961,9 @@ nav{height:64px;padding:0 20px;background:rgba(10,10,11,.9);border-bottom:1px so
 .auth-spinner{border-color:rgba(var(--accent-rgb),.18);border-top-color:var(--accent)}
 
 @media(max-width:768px){
-  nav{height:58px;padding:0 10px}
+  nav{height:58px;padding:0 10px;gap:4px;overflow-x:auto}
   .nav-logo{margin-right:8px}
+  .nbtn{flex:0 0 auto;min-width:max-content;justify-content:flex-start}
   .nav-profile-badge{top:58px;min-height:42px;background:rgba(10,10,11,.97)}
   .page{padding-top:106px}
   .hero{padding:52px 16px 38px;min-height:300px}
