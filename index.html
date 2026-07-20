@@ -726,6 +726,70 @@ nav::-webkit-scrollbar{height:0}
   .planner-event-time{display:none}
 }
 
+/* To-Do and Planner mobile layout: explicit grids prevent native date/time
+   controls from retaining desktop widths and colliding on narrow screens. */
+@media(max-width:600px){
+  #page-todo .sp,#page-planner .sp{padding-left:10px;padding-right:10px}
+  #page-todo .fc,#page-planner .fc{width:100%;max-width:100%;min-width:0;overflow:hidden}
+
+  .todo-datebar{display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch!important;padding:14px;gap:10px}
+  .todo-datebar .fg{width:100%;max-width:none!important;min-width:0!important}
+  .todo-viewing-field{padding-top:2px}
+  #td-date-label{padding:3px 0!important;font-size:15px!important;line-height:1.35}
+  #todo-sync-status{width:auto;max-width:100%;align-self:flex-start}
+
+  .todo-date-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:10px;gap:7px!important}
+  .todo-date-actions .sbtn{width:100%;min-width:0;padding:10px 4px!important;font-size:12px;line-height:1.2}
+
+  #todo-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  #todo-stats .sc{min-width:0;padding:12px 5px}
+  #todo-stats .sv{font-size:20px}
+  #todo-stats .sl2{font-size:10.5px;line-height:1.3;white-space:normal}
+
+  .todo-logbar{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;padding:14px;gap:10px}
+  .todo-logbar .sbtn{justify-self:start;padding:9px 15px;font-size:13px}
+  .todo-logbar span{font-size:12px!important;line-height:1.5}
+
+  .todo-add-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;padding:14px;gap:11px 9px}
+  .todo-add-form .fg{width:100%;max-width:none!important;min-width:0!important}
+  .todo-task-field,.todo-priority-field,.todo-add-btn{grid-column:1/-1}
+  .todo-add-form input[type="time"]{display:block;width:100%;min-width:0;max-width:100%}
+  .todo-priority-field{min-width:0!important}
+  .todo-priority-field .pri-pick{width:100%}
+  .todo-priority-field .pri-btn{padding:10px 5px;font-size:12.5px}
+  .todo-add-btn{width:100%;margin-top:1px}
+
+  #todo-list .ti-row{padding:13px 12px;gap:8px;flex-wrap:wrap}
+  #todo-list .tt{flex:1 1 calc(100% - 38px);min-width:0!important;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+  #todo-list .ttime{margin-left:27px;font-size:11.5px}
+  #todo-list .tp{font-size:10.5px;padding:3px 8px}
+  #todo-list .lock-btn{width:29px;height:29px}
+  #todo-list .db{width:25px;height:29px}
+  #todo-list .tprog{width:100%;padding:8px 12px 14px;gap:10px}
+  #todo-list .tprog-range{min-width:0}
+
+  .planner-datebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;padding:14px;gap:9px}
+  .planner-datebar .fg,.planner-date-field{grid-column:1/-1;width:100%;max-width:none!important;min-width:0!important}
+  .planner-date-title{grid-column:1/-1;width:100%;min-width:0;padding:3px 0 6px}
+  .planner-datebar .sbtn{width:100%;min-width:0;padding:10px 6px;font-size:13px}
+
+  .planner-add{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:end;padding:14px;gap:11px 9px}
+  .planner-add .fg{width:100%;max-width:none!important;min-width:0!important}
+  .planner-event-field,.planner-add-btn{grid-column:1/-1}
+  .planner-add input[type="time"]{display:block;width:100%;min-width:0;max-width:100%}
+  .planner-add-btn{width:100%}
+
+  .planner-event{gap:6px;padding:8px}
+  .planner-event .lock-btn{width:28px;height:28px}
+  .planner-event .db{width:22px;height:28px}
+}
+
+@media(max-width:440px){
+  .todo-add-form,.planner-add{grid-template-columns:minmax(0,1fr)}
+  .todo-time-field,.planner-time-field{grid-column:1}
+  .todo-date-actions .sbtn{font-size:11.5px;padding-left:2px!important;padding-right:2px!important}
+}
+
 /* ── Calorie Tracker page ── */
 .cal-macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 @media(max-width:700px){.cal-macro-grid{grid-template-columns:repeat(2,1fr)}}
@@ -1735,15 +1799,15 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Today</span><h1>Daily To-Do List</h1><p>Plan your day, one task at a time</p></div>
 
     <!-- ═ DATE SELECTOR ═ -->
-    <div class="fc" style="margin-bottom:8px;align-items:center">
-      <div class="fg" style="max-width:190px"><label>Date</label><input class="fi" type="date" id="td-date-picker" onchange="setTodoDate(this.value)"></div>
-      <div class="fg" style="flex:1;min-width:160px">
+    <div class="fc todo-datebar" style="margin-bottom:8px;align-items:center">
+      <div class="fg todo-date-field" style="max-width:190px"><label>Date</label><input class="fi" type="date" id="td-date-picker" onchange="setTodoDate(this.value)"></div>
+      <div class="fg todo-viewing-field" style="flex:1;min-width:160px">
         <label>Viewing</label>
         <div id="td-date-label" style="font-size:14px;font-weight:700;color:var(--t1);padding:9px 0"></div>
         <div id="todo-sync-status" class="notes-sync" data-state="idle"></div>
       </div>
     </div>
-    <div class="fc" style="margin-bottom:8px;gap:8px">
+    <div class="fc todo-date-actions" style="margin-bottom:8px;gap:8px">
       <button type="button" class="sbtn sbtn-sm" onclick="setTodoDateToday()">Today</button>
       <button type="button" class="sbtn sbtn-sm" onclick="setTodoDateTomorrow()">Tomorrow</button>
       <button type="button" class="sbtn sbtn-sm" style="background:rgba(139,92,246,.18);color:#a78bfa;box-shadow:none" onclick="toggleNext7Days()">Next 7 Days</button>
@@ -1751,15 +1815,15 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
     <div class="fin-month-chips" id="td-next7-chips" style="display:none;margin-bottom:14px"></div>
 
     <div class="sr" id="todo-stats"></div>
-    <div class="fc" style="margin-bottom:14px">
+    <div class="fc todo-logbar" style="margin-bottom:14px">
       <button type="button" class="sbtn" style="background:rgba(139,92,246,.18);color:#a78bfa;box-shadow:none" onclick="logDay()">Log Day</button>
       <span style="font-size:12px;color:var(--t2);align-self:center">Saves this date's tasks to history and clears its list so you can start fresh</span>
     </div>
-    <div class="fc">
-      <div class="fg" style="flex:3;min-width:160px"><label>Task</label><input class="fi" type="text" id="td-txt" placeholder="Learn Japanese"></div>
-      <div class="fg"><label>Start Time</label><input class="fi" type="time" id="td-start"></div>
-      <div class="fg"><label>End Time</label><input class="fi" type="time" id="td-end"></div>
-      <div class="fg" style="min-width:150px"><label>Priority</label>
+    <div class="fc todo-add-form">
+      <div class="fg todo-task-field" style="flex:3;min-width:160px"><label>Task</label><input class="fi" type="text" id="td-txt" placeholder="Learn Japanese"></div>
+      <div class="fg todo-time-field"><label>Start Time</label><input class="fi" type="time" id="td-start"></div>
+      <div class="fg todo-time-field"><label>End Time</label><input class="fi" type="time" id="td-end"></div>
+      <div class="fg todo-priority-field" style="min-width:150px"><label>Priority</label>
         <div class="pri-pick">
           <button type="button" class="pri-btn" id="pri-h" onclick="setTodoPri('h')">High</button>
           <button type="button" class="pri-btn sel-m" id="pri-m" onclick="setTodoPri('m')">Med</button>
@@ -1767,7 +1831,7 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
         </div>
         <input type="hidden" id="td-pri" value="m">
       </div>
-      <button type="button" class="sbtn" onclick="addTodo()">Add Task</button>
+      <button type="button" class="sbtn todo-add-btn" onclick="addTodo()">Add Task</button>
     </div>
     <div class="tw" id="todo-list"></div>
 
@@ -1803,17 +1867,17 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
     <div class="sph"><span class="eyebrow"><svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18"/></svg>Schedule</span><h1>Day Planner</h1><p>Drag your daily tasks onto the timeline, or add routine events that stay outside your to-do list</p></div>
 
     <div class="cc planner-datebar">
-      <div class="fg"><label>Date</label><input class="fi" type="date" id="planner-date-picker" onchange="setPlannerDate(this.value)"></div>
+      <div class="fg planner-date-field"><label>Date</label><input class="fi" type="date" id="planner-date-picker" onchange="setPlannerDate(this.value)"></div>
       <div class="planner-date-title" id="planner-date-label"></div>
       <button type="button" class="sbtn sbtn-sm" onclick="setPlannerDateToday()">Today</button>
       <button type="button" class="sbtn sbtn-sm" onclick="setPlannerDateTomorrow()">Tomorrow</button>
     </div>
 
     <div class="fc planner-add">
-      <div class="fg" style="flex:3;min-width:180px"><label>Planner-only event</label><input class="fi" type="text" id="planner-event-text" placeholder="Morning gym, commute, lunch..."></div>
-      <div class="fg"><label>Start</label><input class="fi" type="time" id="planner-event-start"></div>
-      <div class="fg"><label>End</label><input class="fi" type="time" id="planner-event-end"></div>
-      <button type="button" class="sbtn" onclick="addPlannerEvent()">Add to Planner</button>
+      <div class="fg planner-event-field" style="flex:3;min-width:180px"><label>Planner-only event</label><input class="fi" type="text" id="planner-event-text" placeholder="Morning gym, commute, lunch..."></div>
+      <div class="fg planner-time-field"><label>Start</label><input class="fi" type="time" id="planner-event-start"></div>
+      <div class="fg planner-time-field"><label>End</label><input class="fi" type="time" id="planner-event-end"></div>
+      <button type="button" class="sbtn planner-add-btn" onclick="addPlannerEvent()">Add to Planner</button>
     </div>
 
     <div class="planner-layout">
