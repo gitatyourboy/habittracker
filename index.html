@@ -387,6 +387,10 @@ nav::-webkit-scrollbar{height:0}
 .confirm-cancel:hover{background:rgba(255,255,255,.12);color:var(--t1)}
 .confirm-del-btn{padding:8px 18px;border-radius:8px;border:1px solid rgba(var(--warn-rgb),.45);background:rgba(var(--warn-rgb),.15);color:var(--warn);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:var(--tr)}
 .confirm-del-btn:hover{background:rgba(var(--warn-rgb),.28);border-color:rgba(var(--warn-rgb),.7);color:var(--warn-soft)}
+.planner-schedule-box{max-width:430px}
+.planner-schedule-task{padding:11px 13px;margin:0 0 16px;border-radius:11px;background:rgba(var(--accent-rgb),.09);border:1px solid rgba(var(--accent-rgb),.22);font-size:13px;font-weight:700;color:var(--t1);overflow-wrap:anywhere}
+.planner-schedule-times{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+@media(max-width:440px){.planner-schedule-times{grid-template-columns:1fr}}
 /* ── Notes ── */
 .note-card{display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;transition:var(--tr)}
 .note-card:hover{background:rgba(var(--accent-rgb),.06)}
@@ -1684,6 +1688,23 @@ nav{height:64px;padding:0 clamp(16px,2vw,28px);padding-right:clamp(190px,18vw,26
     <div class="confirm-btns">
       <button type="button" class="confirm-cancel" onclick="confirmCancel()">No</button>
       <button type="button" class="confirm-del-btn" onclick="confirmProceed()">Yes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Planner time confirmation -->
+<div class="confirm-overlay" id="planner-schedule-overlay" onclick="if(event.target===this)closePlannerSchedule()">
+  <div class="confirm-box planner-schedule-box" role="dialog" aria-modal="true" aria-labelledby="planner-schedule-title">
+    <div class="confirm-title" id="planner-schedule-title">Schedule task</div>
+    <div class="confirm-msg" style="margin-bottom:10px">Choose exactly when this task starts and ends.</div>
+    <div class="planner-schedule-task" id="planner-schedule-task"></div>
+    <div class="planner-schedule-times">
+      <div class="fg"><label>Start time</label><input class="fi" type="time" id="planner-schedule-start"></div>
+      <div class="fg"><label>End time</label><input class="fi" type="time" id="planner-schedule-end" onkeydown="if(event.key==='Enter')confirmPlannerSchedule()"></div>
+    </div>
+    <div class="confirm-btns">
+      <button type="button" class="confirm-cancel" onclick="closePlannerSchedule()">Cancel</button>
+      <button type="button" class="sbtn" onclick="confirmPlannerSchedule()">Schedule Task</button>
     </div>
   </div>
 </div>
@@ -5356,6 +5377,7 @@ function updateTodoProgress(orig, val) {
    Planner to-do cards are the same objects used by the dated To-Do List.
    Planner-only events live separately so routines never inflate task totals. */
 let _plannerSelectedTodoId = null;
+let _plannerPendingSchedule = null;
 const PLANNER_HOUR_HEIGHT = 56;
 
 function _plannerMigrate(d) {
@@ -5391,6 +5413,45 @@ function _plannerEventPosition(event) {
   const naturalHeight = Math.round(((end - start) / 60) * PLANNER_HOUR_HEIGHT) - 6;
   const remainingHeight = (24 * PLANNER_HOUR_HEIGHT) - top - 3;
   return { top, height:Math.min(remainingHeight, Math.max(46, naturalHeight)) };
+}
+
+function _plannerValidTimeRange(startTime, endTime) {
+  const start = _plannerTimeMinutes(startTime);
+  const end = _plannerTimeMinutes(endTime);
+  return start != null && end != null && end > start;
+}
+
+function openPlannerSchedule(id, suggestedStart) {
+  const d = DB.get();
+  const dateKey = _selectedTodoDate(d);
+  const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
+  if (!task || _todoEffectiveProgress(task) >= 100) return;
+  const startTime = suggestedStart || task.startTime || '';
+  _plannerPendingSchedule = { id, dateKey };
+  document.getElementById('planner-schedule-task').textContent = task.text || 'Untitled task';
+  document.getElementById('planner-schedule-start').value = startTime;
+  document.getElementById('planner-schedule-end').value = task.startTime === startTime ? (task.endTime || '') : '';
+  document.getElementById('planner-schedule-overlay').classList.add('show');
+  setTimeout(() => document.getElementById(startTime ? 'planner-schedule-end' : 'planner-schedule-start').focus(), 0);
+}
+
+function closePlannerSchedule() {
+  document.getElementById('planner-schedule-overlay').classList.remove('show');
+  _plannerPendingSchedule = null;
+  _plannerSelectedTodoId = null;
+  renderPlanner();
+}
+
+function confirmPlannerSchedule() {
+  if (!_plannerPendingSchedule) return;
+  const startTime = document.getElementById('planner-schedule-start').value;
+  const endTime = document.getElementById('planner-schedule-end').value;
+  if (!startTime || !endTime) return toast('Choose both a start and end time');
+  if (!_plannerValidTimeRange(startTime, endTime)) return toast('End time must be after the start time');
+  const pending = _plannerPendingSchedule;
+  document.getElementById('planner-schedule-overlay').classList.remove('show');
+  _plannerPendingSchedule = null;
+  schedulePlannerTodo(pending.id, startTime, endTime, pending.dateKey);
 }
 
 function setPlannerDate(dateStr) {
@@ -5474,26 +5535,26 @@ function plannerDrop(event, startTime) {
   event.stopPropagation();
   event.currentTarget.classList.remove('drag-over');
   const id = event.dataTransfer.getData('text/plain') || _plannerSelectedTodoId;
-  if (id) schedulePlannerTodo(id, startTime);
+  if (id) openPlannerSchedule(id, startTime);
 }
 
 function plannerSlotClick(startTime) {
-  if (_plannerSelectedTodoId) schedulePlannerTodo(_plannerSelectedTodoId, startTime);
+  if (_plannerSelectedTodoId) openPlannerSchedule(_plannerSelectedTodoId, startTime);
 }
 
-function schedulePlannerTodo(id, startTime) {
-  const dateKey = _selectedTodoDate(DB.get());
+function schedulePlannerTodo(id, startTime, endTime, dateKey = _selectedTodoDate(DB.get())) {
+  if (!_plannerValidTimeRange(startTime, endTime)) return toast('Choose a valid start and end time');
   let found = false;
   DB.update(d => {
     const task = _getTodoDateBucket(d, dateKey).find(item => item.id === id);
     if (!task || _todoEffectiveProgress(task) >= 100) return;
     task.startTime = startTime;
-    task.endTime = _plannerEndTime(startTime);
+    task.endTime = endTime;
     task.updatedAt = _nowIso();
     found = true;
   });
   _plannerSelectedTodoId = null;
-  if (found) toast(`Task scheduled for ${startTime}`,'ok');
+  if (found) toast(`Task scheduled for ${startTime}–${endTime}`,'ok');
   renderPlanner();
 }
 

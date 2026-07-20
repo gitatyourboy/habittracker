@@ -3,6 +3,9 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+assert.match(html, /id="planner-schedule-overlay"/, 'planner scheduling dialog should exist');
+assert.match(html, /id="planner-schedule-start"/, 'planner scheduling dialog should ask for a start time');
+assert.match(html, /id="planner-schedule-end"/, 'planner scheduling dialog should ask for an end time');
 const inlineScript = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)]
   .map(match => match[1])
   .find(source => source.includes('const DB ='));
@@ -80,9 +83,22 @@ const tests = `
   assert.equal(_plannerEndTime('06:30'), '07:30');
   assert.equal(_plannerEndTime('23:30'), '23:59');
   assert.equal(_plannerTimeMinutes('05:30'), 330);
+  assert.equal(_plannerValidTimeRange('08:15','09:45'), true);
+  assert.equal(_plannerValidTimeRange('09:45','08:15'), false);
   const longEventPosition = _plannerEventPosition({ startTime:'05:00', endTime:'11:11' });
   assert.equal(longEventPosition.top, 283);
   assert.ok(longEventPosition.height > 300, 'long events should span multiple time rows');
+
+  const scheduleData = DB.defaults();
+  scheduleData.selectedTodoDate = dateKey;
+  scheduleData.todosByDate[dateKey] = [{ id:'scheduled-1', text:'Exact duration', done:false, progress:0 }];
+  DB.get = () => scheduleData;
+  DB.update = callback => { callback(scheduleData); return scheduleData; };
+  renderPlanner = () => {};
+  toast = () => {};
+  schedulePlannerTodo('scheduled-1', '08:15', '09:45', dateKey);
+  assert.equal(scheduleData.todosByDate[dateKey][0].startTime, '08:15');
+  assert.equal(scheduleData.todosByDate[dateKey][0].endTime, '09:45');
 `;
 
 const sourceWithoutInit = inlineScript.replace(/\ninitApp\(\);\s*$/, '');
